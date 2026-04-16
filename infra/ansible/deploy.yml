@@ -1,0 +1,115 @@
+---
+- name: Deploy Smart Inventory System
+  hosts: inventory_servers
+  become: yes
+  vars:
+    app_dir: /opt/smart-inventory
+    docker_compose_version: "2.24.0"
+    db_user: postgres
+    db_password: "{{ vault_db_password }}"
+    db_name: inventory_dashboard
+    jwt_secret: "{{ vault_jwt_secret }}"
+    jwt_refresh_secret: "{{ vault_jwt_refresh_secret }}"
+
+  tasks:
+    # ─── System Prerequisites ───
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install system dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        state: present
+
+    # ─── Docker Installation ───
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker Engine
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+
+    - name: Start and enable Docker service
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add deploy user to Docker group
+      user:
+        name: "{{ ansible_user }}"
+        groups: docker
+        append: yes
+
+    # ─── Application Deployment ───
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: "0755"
+
+    - name: Copy project files to server
+      synchronize:
+        src: "{{ playbook_dir }}/../../"
+        dest: "{{ app_dir }}"
+        delete: yes
+        recursive: yes
+        rsync_opts:
+          - "--exclude=node_modules"
+          - "--exclude=.git"
+          - "--exclude=dist"
+
+    - name: Create .env file
+      template:
+        src: templates/env.j2
+        dest: "{{ app_dir }}/infra/docker/.env"
+        owner: "{{ ansible_user }}"
+        mode: "0600"
+
+    - name: Build and start Docker containers
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}/infra/docker"
+        build: always
+        state: present
+
+    - name: Wait for backend to be healthy
+      uri:
+        url: "http://localhost:5000/api/health"
+        status_code: 200
+      register: health_check
+      retries: 30
+      delay: 5
+      until: health_check.status == 200
+
+    - name: Print deployment status
+      debug:
+        msg: "Smart Inventory System deployed successfully at http://{{ ansible_host }}"
+
+# ─── Handlers ───
+  handlers:
+    - name: Restart Docker
+      systemd:
+        name: docker
+        state: restarted

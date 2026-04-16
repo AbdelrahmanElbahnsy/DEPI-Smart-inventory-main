@@ -1,0 +1,136 @@
+{
+  "sidebar": {
+    "brand": "SmartInventory",
+    "brandSub": "Management System",
+    "mainMenu": "Main Menu",
+    "dashboard": "Dashboard",
+    "inventory": "Inventory",
+    "products": "Products",
+    "suppliers": "Suppliers",
+    "orders": "Orders",
+    "alerts": "Alerts",
+    "reports": "Reports",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "settings": {
+    "pageTitle": "Settings",
+    "pageSubtitle": "Manage your account and preferences",
+    "profileInfo": "Profile Information",
+    "fullName": "Full Name",
+    "email": "Email",
+    "role": "Role",
+    "phone": "Phone",
+    "saveChanges": "Save Changes",
+    "profileUpdated": "Profile updated successfully",
+    "roleChangeNote": "Role can only be changed by an Owner via User Management",
+    "changePassword": "Change Password",
+    "currentPassword": "Current Password",
+    "newPassword": "New Password",
+    "confirmPassword": "Confirm Password",
+    "updatePassword": "Update Password",
+    "passwordChanged": "Password changed successfully",
+    "passwordsDoNotMatch": "Passwords do not match",
+    "passwordMinLength": "Password must be at least 6 characters",
+    "notifications": "Notifications",
+    "lowStockAlerts": "Low stock alerts",
+    "outOfStockAlerts": "Out of stock alerts",
+    "overstockAlerts": "Overstock alerts",
+    "orderUpdates": "Order status updates",
+    "reportGeneration": "Report generation",
+    "settingsSavedAuto": "Settings saved automatically to browser",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "darkMode": "Dark Mode",
+    "lightMode": "Light Mode",
+    "language": "Language",
+    "english": "English",
+    "arabic": "Arabic",
+    "dateFormat": "Date Format",
+    "userManagement": "User Management",
+    "userManagementSub": "Add, edit, and manage all user accounts",
+    "userManagementSubManager": "Manage Staff and Security team members",
+    "addUser": "Add User",
+    "editUser": "Edit User",
+    "addNewUser": "Add New User",
+    "user": "User",
+    "created": "Created",
+    "actions": "Actions",
+    "cancel": "Cancel",
+    "createUser": "Create User",
+    "updateUser": "Update User",
+    "deleteUser": "Delete this user?",
+    "role_owner": "Owner",
+    "role_manager": "Manager",
+    "role_security": "Security",
+    "role_staff": "Staff",
+    "manager": "Manager",
+    "admin": "Admin",
+    "passwordPlaceholder": "Min 6 characters"
+  },
+  "topbar": {
+    "search": "Search...",
+    "notifications": "Notifications",
+    "noNewNotifications": "No new notifications",
+    "viewAllAlerts": "View all alerts",
+    "myProfile": "My Profile",
+    "logout": "Logout"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Overview of your inventory"
+    },
+    "inventory": {
+      "title": "Inventory",
+      "subtitle": "Manage your stock levels"
+    },
+    "products": {
+      "title": "Products",
+      "subtitle": "View and manage products"
+    },
+    "suppliers": {
+      "title": "Suppliers",
+      "subtitle": "Manage supplier relationships"
+    },
+    "orders": {
+      "title": "Orders",
+      "subtitle": "Track purchase and sales orders"
+    },
+    "alerts": {
+      "title": "Alerts",
+      "subtitle": "Stock notifications and warnings"
+    },
+    "reports": {
+      "title": "Reports",
+      "subtitle": "Generate and export reports"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Account and preferences"
+    },
+    "profile": {
+      "title": "My Profile",
+      "subtitle": "View your profile information"
+    }
+  },
+  "profile": {
+    "backToDashboard": "Back to Dashboard",
+    "editProfile": "Edit Profile",
+    "editProfileDesc": "Update your name, email, and photo",
+    "personalInfo": "Personal Information",
+    "fullName": "Full Name",
+    "email": "Email Address",
+    "phone": "Phone Number",
+    "role": "Role",
+    "accountDetails": "Account Details",
+    "accountType": "Account Type",
+    "premium": "Premium",
+    "memberSince": "Member Since",
+    "status": "Status",
+    "active": "Active",
+    "quickActions": "Quick Actions",
+    "security": "Security",
+    "securityDesc": "Change password and security settings"
+  }
+}

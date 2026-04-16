@@ -1,0 +1,136 @@
+{
+  "sidebar": {
+    "brand": "سمارت إنفنتوري",
+    "brandSub": "نظام إدارة المخزون",
+    "mainMenu": "القائمة الرئيسية",
+    "dashboard": "لوحة التحكم",
+    "inventory": "المخزون",
+    "products": "المنتجات",
+    "suppliers": "الموردين",
+    "orders": "الطلبات",
+    "alerts": "التنبيهات",
+    "reports": "التقارير",
+    "settings": "الإعدادات",
+    "logout": "تسجيل الخروج"
+  },
+  "settings": {
+    "pageTitle": "الإعدادات",
+    "pageSubtitle": "إدارة حسابك وتفضيلاتك",
+    "profileInfo": "معلومات الملف الشخصي",
+    "fullName": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "role": "الدور",
+    "phone": "الهاتف",
+    "saveChanges": "حفظ التغييرات",
+    "profileUpdated": "تم تحديث الملف الشخصي بنجاح",
+    "roleChangeNote": "لا يمكن تغيير الدور إلا بواسطة المالك من خلال إدارة المستخدمين",
+    "changePassword": "تغيير كلمة المرور",
+    "currentPassword": "كلمة المرور الحالية",
+    "newPassword": "كلمة المرور الجديدة",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "updatePassword": "تحديث كلمة المرور",
+    "passwordChanged": "تم تغيير كلمة المرور بنجاح",
+    "passwordsDoNotMatch": "كلمات المرور غير متطابقة",
+    "passwordMinLength": "يجب أن تكون كلمة المرور 6 أحرف على الأقل",
+    "notifications": "الإشعارات",
+    "lowStockAlerts": "تنبيهات انخفاض المخزون",
+    "outOfStockAlerts": "تنبيهات نفاد المخزون",
+    "overstockAlerts": "تنبيهات فائض المخزون",
+    "orderUpdates": "تحديثات حالة الطلبات",
+    "reportGeneration": "إنشاء التقارير",
+    "settingsSavedAuto": "يتم حفظ الإعدادات تلقائياً في المتصفح",
+    "appearance": "المظهر",
+    "theme": "السمة",
+    "darkMode": "الوضع الداكن",
+    "lightMode": "الوضع الفاتح",
+    "language": "اللغة",
+    "english": "English",
+    "arabic": "العربية",
+    "dateFormat": "تنسيق التاريخ",
+    "userManagement": "إدارة المستخدمين",
+    "userManagementSub": "إضافة وتعديل وإدارة جميع حسابات المستخدمين",
+    "userManagementSubManager": "إدارة أعضاء فريق الموظفين والأمن",
+    "addUser": "إضافة مستخدم",
+    "editUser": "تعديل المستخدم",
+    "addNewUser": "إضافة مستخدم جديد",
+    "user": "المستخدم",
+    "created": "تاريخ الإنشاء",
+    "actions": "الإجراءات",
+    "cancel": "إلغاء",
+    "createUser": "إنشاء مستخدم",
+    "updateUser": "تحديث المستخدم",
+    "deleteUser": "هل تريد حذف هذا المستخدم؟",
+    "role_owner": "مالك",
+    "role_manager": "مدير",
+    "role_security": "أمن",
+    "role_staff": "موظف",
+    "manager": "مدير",
+    "admin": "مشرف",
+    "passwordPlaceholder": "6 أحرف على الأقل"
+  },
+  "topbar": {
+    "search": "بحث...",
+    "notifications": "الإشعارات",
+    "noNewNotifications": "لا توجد إشعارات جديدة",
+    "viewAllAlerts": "عرض جميع التنبيهات",
+    "myProfile": "الملف الشخصي",
+    "logout": "تسجيل الخروج"
+  },
+  "pages": {
+    "dashboard": {
+      "title": "لوحة التحكم",
+      "subtitle": "نظرة عامة على المخزون"
+    },
+    "inventory": {
+      "title": "المخزون",
+      "subtitle": "إدارة مستويات المخزون"
+    },
+    "products": {
+      "title": "المنتجات",
+      "subtitle": "عرض وإدارة المنتجات"
+    },
+    "suppliers": {
+      "title": "الموردين",
+      "subtitle": "إدارة علاقات الموردين"
+    },
+    "orders": {
+      "title": "الطلبات",
+      "subtitle": "تتبع طلبات الشراء والبيع"
+    },
+    "alerts": {
+      "title": "التنبيهات",
+      "subtitle": "إشعارات وتحذيرات المخزون"
+    },
+    "reports": {
+      "title": "التقارير",
+      "subtitle": "إنشاء وتصدير التقارير"
+    },
+    "settings": {
+      "title": "الإعدادات",
+      "subtitle": "الحساب والتفضيلات"
+    },
+    "profile": {
+      "title": "الملف الشخصي",
+      "subtitle": "عرض معلومات الملف الشخصي"
+    }
+  },
+  "profile": {
+    "backToDashboard": "العودة للوحة التحكم",
+    "editProfile": "تعديل الملف الشخصي",
+    "editProfileDesc": "تحديث الاسم والبريد الإلكتروني والصورة",
+    "personalInfo": "المعلومات الشخصية",
+    "fullName": "الاسم الكامل",
+    "email": "البريد الإلكتروني",
+    "phone": "رقم الهاتف",
+    "role": "الدور",
+    "accountDetails": "تفاصيل الحساب",
+    "accountType": "نوع الحساب",
+    "premium": "مميز",
+    "memberSince": "عضو منذ",
+    "status": "الحالة",
+    "active": "نشط",
+    "quickActions": "إجراءات سريعة",
+    "security": "الأمان",
+    "securityDesc": "تغيير كلمة المرور وإعدادات الأمان"
+  }
+}

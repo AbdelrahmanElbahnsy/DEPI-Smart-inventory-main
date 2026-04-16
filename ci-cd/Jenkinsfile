@@ -1,0 +1,98 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY = 'your-registry.com'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install Dependencies') {
+            parallel {
+                stage('Frontend') {
+                    steps {
+                        dir('services/frontend') { sh 'npm ci' }
+                    }
+                }
+                stage('Backend API') {
+                    steps {
+                        dir('services/backend/api') { sh 'npm ci' }
+                    }
+                }
+                stage('Inventory API') {
+                    steps {
+                        dir('services/backend/inventory-api') { sh 'npm ci' }
+                    }
+                }
+                stage('Alert API') {
+                    steps {
+                        dir('services/backend/alert-api') { sh 'npm ci' }
+                    }
+                }
+            }
+        }
+
+        stage('Build Frontend') {
+            steps {
+                dir('services/frontend') { sh 'npm run build' }
+            }
+        }
+
+        stage('Build Docker Images') {
+            parallel {
+                stage('Frontend Image') {
+                    steps {
+                        sh "docker build -t ${DOCKER_REGISTRY}/inventory-frontend:${IMAGE_TAG} services/frontend/"
+                    }
+                }
+                stage('Backend API Image') {
+                    steps {
+                        sh "docker build -t ${DOCKER_REGISTRY}/inventory-backend:${IMAGE_TAG} services/backend/api/"
+                    }
+                }
+                stage('Inventory API Image') {
+                    steps {
+                        sh "docker build -t ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG} services/backend/inventory-api/"
+                    }
+                }
+                stage('Alert API Image') {
+                    steps {
+                        sh "docker build -t ${DOCKER_REGISTRY}/alert-api:${IMAGE_TAG} services/backend/alert-api/"
+                    }
+                }
+            }
+        }
+
+        stage('Push Images') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
+                    sh "echo $PASS | docker login ${DOCKER_REGISTRY} -u $USER --password-stdin"
+                    sh "docker push ${DOCKER_REGISTRY}/inventory-frontend:${IMAGE_TAG}"
+                    sh "docker push ${DOCKER_REGISTRY}/inventory-backend:${IMAGE_TAG}"
+                    sh "docker push ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG}"
+                    sh "docker push ${DOCKER_REGISTRY}/alert-api:${IMAGE_TAG}"
+                }
+            }
+        }
+
+        stage('Deploy to K8s') {
+            steps {
+                sh "kubectl set image deployment/inventory-frontend frontend=${DOCKER_REGISTRY}/inventory-frontend:${IMAGE_TAG}"
+                sh "kubectl set image deployment/inventory-backend backend=${DOCKER_REGISTRY}/inventory-backend:${IMAGE_TAG}"
+                sh "kubectl set image deployment/inventory-api-service inventory-api=${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG}"
+                sh "kubectl set image deployment/alert-api-service alert-api=${DOCKER_REGISTRY}/alert-api:${IMAGE_TAG}"
+            }
+        }
+    }
+
+    post {
+        success { echo '✅ Pipeline completed successfully!' }
+        failure { echo '❌ Pipeline failed!' }
+    }
+}

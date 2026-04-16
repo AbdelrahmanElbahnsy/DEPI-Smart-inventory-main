@@ -1,0 +1,18 @@
+{
+  "name": "inventory-api",
+  "version": "1.0.0",
+  "description": "Smart Inventory - Inventory Microservice",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "pg": "^8.12.0",
+    "sequelize": "^6.37.1",
+    "dotenv": "^16.4.5"
+  }
+}

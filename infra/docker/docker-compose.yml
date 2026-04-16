@@ -1,3 +1,4 @@
+name: depi-smart-inventory-main
 services:
   # ─── PostgreSQL Database ───
   db:

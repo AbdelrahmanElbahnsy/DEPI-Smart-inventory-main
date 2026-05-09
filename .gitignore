@@ -16,4 +16,5 @@ jenkins-data/
 venv/
 __pycache__/
 *.pyc
-.env
+.envnode_modules/
+**/node_modules/

@@ -8,20 +8,16 @@ pipeline {
         
         // Frontend Build Args
         FRONTEND_VITE_API_URL = 'http://68.221.176.92:5000/api'
-        
-        // Deployment Config
-        AZURE_SERVER_IP = '68.221.176.92'
-        // Update DEPLOY_PATH to point to the directory containing docker-compose.yml on the Azure server
-        DEPLOY_PATH = '~/DEPI-Smart-inventory-main/infra/docker' 
-        SSH_USER = 'azureuser' // Change this to your actual Azure VM SSH username
     }
 
     stages {
         stage('Docker Login') {
             steps {
-                // Using docker-hub-creds as requested
+                // Using docker-hub-creds safely with token
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                    sh '''
+                    echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                    '''
                 }
             }
         }
@@ -62,18 +58,15 @@ pipeline {
 
         stage('Smart Deployment to Azure') {
             steps {
-                // Using azure-ssh-creds for SSH Authentication
-                sshagent(credentials: ['azure-ssh-creds']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no ${SSH_USER}@${AZURE_SERVER_IP} '
-                        cd ${DEPLOY_PATH} &&
-                        docker-compose pull &&
-                        docker-compose up -d --remove-orphans &&
-                        echo "--------------------------" &&
-                        echo "Containers Status:" &&
-                        docker ps
-                    '
-                    """
+                // Deployment directly from Jenkins since it is hosted on the same VM
+                dir('infra/docker') { 
+                    sh '''
+                    docker-compose pull
+                    docker-compose up -d --remove-orphans
+                    echo "--------------------------"
+                    echo "Containers Status:"
+                    docker ps
+                    '''
                 }
             }
         }
@@ -82,11 +75,9 @@ pipeline {
     post {
         success {
             echo "✅ Pipeline completed successfully. All services are built, pushed, and deployed!"
-            // Add Slack/Discord/Email notifications here if needed
         }
         failure {
             echo "❌ Pipeline failed! Please check the Jenkins logs to investigate."
-            // Add Slack/Discord/Email notifications here if needed
         }
         always {
             echo "🧹 Cleaning up..."

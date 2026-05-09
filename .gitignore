@@ -60,3 +60,6 @@ coverage/
 .eslintcache
 .stylelintcache
 *.local
+.terraform/
+*.tfstate
+*.tfstate.backup

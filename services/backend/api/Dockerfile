@@ -5,7 +5,7 @@ WORKDIR /app
 # Copy package files
 COPY services/backend/api/package*.json ./
 
-RUN npm install
+RUN npm ci --omit=dev
 
 COPY services/backend/api/ ./
 COPY services/database/ /app/services/database/

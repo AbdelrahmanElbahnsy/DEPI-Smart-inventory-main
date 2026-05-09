@@ -27,6 +27,7 @@ const allowedOrigins = [
   'http://localhost',        // Docker nginx (no port)
   'http://127.0.0.1:5173',
   'http://127.0.0.1',
+  'http://68.221.176.92',    // Added explicitly for allowed IP
 ];
 
 // Allow custom CORS_ORIGIN from env (e.g., production domain)
@@ -35,7 +36,7 @@ if (process.env.CORS_ORIGIN) {
 }
 
 app.use(cors({
-  origin: (origin, callback) => {
+  origin: function (origin, callback) {
     // In development mode, allow all origins
     if (process.env.NODE_ENV !== 'production' || !origin || allowedOrigins.includes(origin)) {
       callback(null, true);

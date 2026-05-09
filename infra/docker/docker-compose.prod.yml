@@ -1,33 +1,28 @@
-name: depi-smart-inventory-main
+name: depi-smart-inventory-prod
 services:
-  # ─── PostgreSQL Database ───
   db:
     image: postgres:16-alpine
     container_name: smart_inventory_db
-    restart: unless-stopped
+    restart: always
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-102030}
-      POSTGRES_DB: ${DB_NAME:-inventory_dashboard}
-    ports:
-      - "5432:5432"
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-inventory_prod}
     volumes:
       - pg_data:/var/lib/postgresql/data
     networks:
       - inventory_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d $${POSTGRES_DB:-inventory_dashboard}"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U postgres -d $${POSTGRES_DB}"]
+      interval: 10s
       timeout: 5s
       retries: 5
 
-  # ─── Backend API ───
   backend:
-    build:
-      context: ../../
-      dockerfile: services/backend/api/Dockerfile
+    # تم التعديل لحسابك على Docker Hub
+    image: abdelrahman1212aa/smart-inventory-api:latest
     container_name: smart_inventory_api
-    restart: unless-stopped
+    restart: always
     ports:
       - "5000:5000"
     environment:
@@ -35,10 +30,10 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-102030}
-      - DB_NAME=${DB_NAME:-inventory_dashboard}
-      - JWT_SECRET=${JWT_SECRET:-inventory_dashboard_super_secret_key_2024}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-inventory_dashboard_refresh_secret_key_2024}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-inventory_prod}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
     volumes:
       - uploads_data:/app/uploads
     networks:
@@ -47,13 +42,11 @@ services:
       db:
         condition: service_healthy
 
-  # ─── Inventory Microservice ───
   inventory-api:
-    build:
-      context: ../../
-      dockerfile: services/backend/inventory-api/Dockerfile
+    # تم التعديل لحسابك على Docker Hub
+    image: abdelrahman1212aa/smart-inventory-api:latest
     container_name: smart_inventory_service
-    restart: unless-stopped
+    restart: always
     ports:
       - "5001:5001"
     environment:
@@ -61,8 +54,8 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-102030}
-      - DB_NAME=${DB_NAME:-inventory_dashboard}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-inventory_prod}
       - PORT=5001
     networks:
       - inventory_network
@@ -70,13 +63,11 @@ services:
       db:
         condition: service_healthy
 
-  # ─── Alert Microservice ───
   alert-api:
-    build:
-      context: ../../
-      dockerfile: services/backend/alert-api/Dockerfile
+    # تم التعديل لحسابك على Docker Hub
+    image: abdelrahman1212aa/smart-alert-api:latest
     container_name: smart_alert_service
-    restart: unless-stopped
+    restart: always
     ports:
       - "5002:5002"
     environment:
@@ -84,8 +75,8 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-102030}
-      - DB_NAME=${DB_NAME:-inventory_dashboard}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-inventory_prod}
       - PORT=5002
     networks:
       - inventory_network
@@ -93,13 +84,11 @@ services:
       db:
         condition: service_healthy
 
-  # ─── Frontend (Nginx) ───
   frontend:
-    build:
-      context: ../../
-      dockerfile: services/frontend/Dockerfile
+    # تم التعديل لحسابك على Docker Hub
+    image: abdelrahman1212aa/smart-inventory-ui:latest
     container_name: smart_inventory_ui
-    restart: unless-stopped
+    restart: always
     ports:
       - "80:80"
     networks:

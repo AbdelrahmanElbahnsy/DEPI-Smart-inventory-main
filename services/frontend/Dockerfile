@@ -2,7 +2,7 @@
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY services/frontend/package*.json ./
-RUN npm install --network-timeout=1000000
+RUN npm ci --network-timeout=1000000
 COPY services/frontend/ ./
 RUN npm run build
 

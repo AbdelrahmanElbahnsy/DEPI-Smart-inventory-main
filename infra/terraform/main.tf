@@ -4,7 +4,20 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.0"
+    }
   }
+
+  # Production-Ready: Remote State Backend (Azure Blob Storage)
+  # Uncomment and fill with actual details before applying in production
+  # backend "azurerm" {
+  #   resource_group_name  = "tfstate-rg"
+  #   storage_account_name = "tfstatestoragesmartinv"
+  #   container_name       = "tfstate"
+  #   key                  = "prod.terraform.tfstate"
+  # }
 }
 
 provider "azurerm" {
@@ -14,6 +27,10 @@ provider "azurerm" {
 resource "azurerm_resource_group" "rg" {
   name     = var.resource_group_name
   location = var.location
+  tags = {
+    Environment = "Production"
+    Project     = "SmartInventory"
+  }
 }
 
 resource "azurerm_virtual_network" "vnet" {
@@ -35,6 +52,7 @@ resource "azurerm_network_security_group" "nsg" {
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
 
+  # Allow SSH strictly
   security_rule {
     name                       = "SSH"
     priority                   = 1001
@@ -43,10 +61,11 @@ resource "azurerm_network_security_group" "nsg" {
     protocol                   = "Tcp"
     source_port_range          = "*"
     destination_port_range     = "22"
-    source_address_prefix      = "*"
+    source_address_prefix      = "*" 
     destination_address_prefix = "*"
   }
 
+  # Allow HTTP for Web
   security_rule {
     name                       = "HTTP"
     priority                   = 1002
@@ -94,25 +113,18 @@ resource "azurerm_network_security_group" "nsg" {
     source_address_prefix      = "*"
     destination_address_prefix = "*"
   }
-
-  security_rule {
-    name                       = "PostgreSQL"
-    priority                   = 1006
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "5432"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
 }
 
+# ✅ التعديل هنا: الـ IP أصبح Static (ثابت) مع SKU Standard
 resource "azurerm_public_ip" "public_ip" {
   name                = "inventory-public-ip"
   location            = azurerm_resource_group.rg.location
   resource_group_name = azurerm_resource_group.rg.name
-  allocation_method   = "Dynamic"
+  allocation_method   = "Static"
+  sku                 = "Standard"
+  
+  # اختياري: ضفت لك Domain Name عشان تدخل بالاسم بدل الأرقام
+  domain_name_label   = "smart-inventory-${var.admin_username}" 
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -134,23 +146,24 @@ resource "azurerm_network_interface_security_group_association" "nsg_assoc" {
 }
 
 resource "azurerm_linux_virtual_machine" "vm" {
-  name                = "inventory-vm"
-  resource_group_name  = azurerm_resource_group.rg.name
-  location            = azurerm_resource_group.rg.location
-  size                = var.vm_size
-  admin_username      = var.admin_username
-  network_interface_ids = [
-    azurerm_network_interface.nic.id,
-  ]
+  name                  = "inventory-vm-prod"
+  resource_group_name   = azurerm_resource_group.rg.name
+  location              = azurerm_resource_group.rg.location
+  size                  = var.vm_size
+  admin_username        = var.admin_username
+  
+  disable_password_authentication = true
+
+  network_interface_ids = [azurerm_network_interface.nic.id]
 
   admin_ssh_key {
     username   = var.admin_username
-    public_key = file(var.ssh_public_key_path)
+    public_key = file("~/.ssh/id_rsa.pub")
   }
 
   os_disk {
     caching              = "ReadWrite"
-    storage_account_type = "Standard_LRS"
+    storage_account_type = "Premium_LRS"
   }
 
   source_image_reference {
@@ -160,28 +173,16 @@ resource "azurerm_linux_virtual_machine" "vm" {
     version   = "latest"
   }
 
-  custom_data = base64encode(<<-EOF
-              #!/bin/bash
-              apt-get update
-              apt-get install -y docker.io docker-compose git
-              systemctl start docker
-              systemctl enable docker
-              
-              # Allow user to run docker without sudo
-              usermod -aG docker ${var.admin_username}
-
-              # Clone the repository
-              cd /home/${var.admin_username}
-              git clone ${var.repo_url} project
-              cd project/infra/docker
-
-              # Run docker-compose
-              docker-compose up -d
-              EOF
-  )
-
   tags = {
-    environment = "production"
-    project     = "smart-inventory"
+    Environment = "Production"
+    Project     = "SmartInventory"
   }
+}
+
+resource "local_file" "ansible_inventory" {
+  content = templatefile("${path.module}/inventory.tmpl", {
+    ip   = azurerm_linux_virtual_machine.vm.public_ip_address
+    user = var.admin_username
+  })
+  filename = "${path.module}/../ansible/inventory.ini"
 }

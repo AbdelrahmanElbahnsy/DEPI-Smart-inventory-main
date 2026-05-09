@@ -103,6 +103,18 @@ spec:
           image: smart-inventory/frontend:latest
           ports:
             - containerPort: 80
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
           resources:
             requests:
               cpu: "50m"
@@ -160,6 +172,18 @@ spec:
                   key: db-name
             - name: PORT
               value: "5001"
+          livenessProbe:
+            httpGet:
+              path: /api/inventory/health
+              port: 5001
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/inventory/health
+              port: 5001
+            initialDelaySeconds: 10
+            periodSeconds: 5
           resources:
             requests:
               cpu: "100m"
@@ -217,6 +241,18 @@ spec:
                   key: db-name
             - name: PORT
               value: "5002"
+          livenessProbe:
+            httpGet:
+              path: /api/alert/health
+              port: 5002
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/alert/health
+              port: 5002
+            initialDelaySeconds: 10
+            periodSeconds: 5
           resources:
             requests:
               cpu: "50m"
@@ -266,6 +302,22 @@ spec:
           volumeMounts:
             - name: pg-data
               mountPath: /var/lib/postgresql/data
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - postgres
+            initialDelaySeconds: 10
+            periodSeconds: 5
           resources:
             requests:
               cpu: "100m"

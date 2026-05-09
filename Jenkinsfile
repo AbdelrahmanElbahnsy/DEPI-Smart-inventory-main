@@ -13,7 +13,6 @@ pipeline {
     stages {
         stage('Docker Login') {
             steps {
-                // Using docker-hub-creds safely with token
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                     sh '''
                     echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
@@ -26,29 +25,29 @@ pipeline {
             parallel {
                 stage('API - Backend') {
                     steps {
-                        sh "docker build -t ${DOCKER_REGISTRY}/smart-inventory-api:latest -t ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG} services/backend/api"
+                        // Added -f and changed context to .
+                        sh "docker build -f services/backend/api/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-api:latest -t ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG} ."
                         sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:latest"
                         sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG}"
                     }
                 }
                 stage('API - Inventory') {
                     steps {
-                        sh "docker build -t ${DOCKER_REGISTRY}/inventory-api:latest -t ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG} services/backend/inventory-api"
+                        sh "docker build -f services/backend/inventory-api/Dockerfile -t ${DOCKER_REGISTRY}/inventory-api:latest -t ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG} ."
                         sh "docker push ${DOCKER_REGISTRY}/inventory-api:latest"
                         sh "docker push ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG}"
                     }
                 }
                 stage('API - Alert') {
                     steps {
-                        sh "docker build -t ${DOCKER_REGISTRY}/smart-alert-api:latest -t ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG} services/backend/alert-api"
+                        sh "docker build -f services/backend/alert-api/Dockerfile -t ${DOCKER_REGISTRY}/smart-alert-api:latest -t ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG} ."
                         sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:latest"
                         sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG}"
                     }
                 }
                 stage('UI - Frontend') {
                     steps {
-                        // Injecting VITE_API_URL as a Build Argument
-                        sh "docker build --build-arg VITE_API_URL=${FRONTEND_VITE_API_URL} -t ${DOCKER_REGISTRY}/smart-inventory-ui:latest -t ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG} services/frontend"
+                        sh "docker build --build-arg VITE_API_URL=${FRONTEND_VITE_API_URL} -f services/frontend/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-ui:latest -t ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG} ."
                         sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:latest"
                         sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}"
                     }
@@ -58,7 +57,6 @@ pipeline {
 
         stage('Smart Deployment to Azure') {
             steps {
-                // Deployment directly from Jenkins since it is hosted on the same VM
                 dir('infra/docker') { 
                     sh '''
                     docker-compose pull

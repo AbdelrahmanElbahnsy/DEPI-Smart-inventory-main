@@ -7,7 +7,7 @@ pipeline {
         IMAGE_TAG = "${env.BUILD_NUMBER}" // Used alongside latest for versioning
         
         // Frontend Build Args
-        FRONTEND_VITE_API_URL = 'http://68.221.176.92:5000/api'
+        FRONTEND_VITE_API_URL = '/api'
     }
 
     stages {

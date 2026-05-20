@@ -28,6 +28,8 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://127.0.0.1',
   'http://68.221.176.92',    // Added explicitly for allowed IP
+  'http://smart-inventory-azureuser.spaincentral.cloudapp.azure.com',
+  'https://smart-inventory-azureuser.spaincentral.cloudapp.azure.com',
 ];
 
 // Allow custom CORS_ORIGIN from env (e.g., production domain)

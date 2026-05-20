@@ -18,3 +18,7 @@ __pycache__/
 *.pyc
 .envnode_modules/
 **/node_modules/
+
+# Database backup files
+backup.sql
+

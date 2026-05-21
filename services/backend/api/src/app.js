@@ -37,19 +37,14 @@ if (process.env.CORS_ORIGIN) {
   allowedOrigins.push(...process.env.CORS_ORIGIN.split(','));
 }
 
+// الحل المضمون: تمرير المصفوفة مباشرة بدل الفانكشن المعقدة
 app.use(cors({
-  origin: function (origin, callback) {
-    // In development mode, allow all origins
-    if (process.env.NODE_ENV !== 'production' || !origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error(`CORS: origin ${origin} not allowed`));
-    }
-  },
+  origin: allowedOrigins,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
 }));
+
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));

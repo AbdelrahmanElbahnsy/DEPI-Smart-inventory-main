@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Use VITE_API_URL env var for Docker/production flexibility; falls back to '/api' for proxy routing
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+// Enforce relative path '/api' so the frontend dynamically uses the domain/IP it was loaded from via proxy
+const API_BASE_URL = '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -13,7 +13,15 @@ const PORT = process.env.PORT || 5001;
 app.use(cors({
   origin: (origin, callback) => {
     // Allow same-origin proxy requests (no origin header) and known origins
-    const allowed = ['http://localhost:5173', 'http://localhost', 'http://127.0.0.1:5173', 'http://127.0.0.1'];
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost',
+      'http://127.0.0.1:5173',
+      'http://127.0.0.1',
+      'http://68.221.176.92',
+      'http://smart-inventory-azureuser.spaincentral.cloudapp.azure.com',
+      'https://smart-inventory-azureuser.spaincentral.cloudapp.azure.com'
+    ];
     if (process.env.CORS_ORIGIN) allowed.push(...process.env.CORS_ORIGIN.split(','));
     if (!origin || allowed.includes(origin) || process.env.NODE_ENV !== 'production') {
       callback(null, true);

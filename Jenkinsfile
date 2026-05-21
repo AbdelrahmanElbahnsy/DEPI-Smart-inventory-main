@@ -57,8 +57,8 @@ pipeline {
             steps {
                 dir('infra/docker') { 
                     sh '''
-                    docker-compose pull
-                    docker-compose up -d --remove-orphans
+                    docker-compose down
+                    docker-compose up -d
                     echo "--------------------------"
                     echo "Containers Status:"
                     docker ps

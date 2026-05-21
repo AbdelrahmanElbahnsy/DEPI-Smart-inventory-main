@@ -2,9 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // Enable Docker BuildKit to fix parallel build race conditions
-        DOCKER_BUILDKIT = '1'
-        
         // Registry & Image Tagging
         DOCKER_REGISTRY = 'abdelrahman1212aa'
         IMAGE_TAG = "${env.BUILD_NUMBER}" // Used alongside latest for versioning
@@ -24,37 +21,35 @@ pipeline {
             }
         }
 
-        stage('Parallel Build & Push') {
-            parallel {
-                stage('API - Backend') {
-                    steps {
-                        // Added -f and changed context to .
-                        sh "docker build -f services/backend/api/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-api:latest -t ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG} ."
-                        sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:latest"
-                        sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG}"
-                    }
-                }
-                stage('API - Inventory') {
-                    steps {
-                        sh "docker build -f services/backend/inventory-api/Dockerfile -t ${DOCKER_REGISTRY}/inventory-api:latest -t ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG} ."
-                        sh "docker push ${DOCKER_REGISTRY}/inventory-api:latest"
-                        sh "docker push ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG}"
-                    }
-                }
-                stage('API - Alert') {
-                    steps {
-                        sh "docker build -f services/backend/alert-api/Dockerfile -t ${DOCKER_REGISTRY}/smart-alert-api:latest -t ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG} ."
-                        sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:latest"
-                        sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG}"
-                    }
-                }
-                stage('UI - Frontend') {
-                    steps {
-                        sh "docker build --build-arg VITE_API_URL=${FRONTEND_VITE_API_URL} -f services/frontend/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-ui:latest -t ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG} ."
-                        sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:latest"
-                        sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}"
-                    }
-                }
+        stage('Build API - Backend') {
+            steps {
+                sh "docker build -f services/backend/api/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-api:latest -t ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:latest"
+                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG}"
+            }
+        }
+
+        stage('Build API - Inventory') {
+            steps {
+                sh "docker build -f services/backend/inventory-api/Dockerfile -t ${DOCKER_REGISTRY}/inventory-api:latest -t ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/inventory-api:latest"
+                sh "docker push ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG}"
+            }
+        }
+
+        stage('Build API - Alert') {
+            steps {
+                sh "docker build -f services/backend/alert-api/Dockerfile -t ${DOCKER_REGISTRY}/smart-alert-api:latest -t ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:latest"
+                sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG}"
+            }
+        }
+
+        stage('Build UI - Frontend') {
+            steps {
+                sh "docker build --build-arg VITE_API_URL=${FRONTEND_VITE_API_URL} -f services/frontend/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-ui:latest -t ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:latest"
+                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}"
             }
         }
 

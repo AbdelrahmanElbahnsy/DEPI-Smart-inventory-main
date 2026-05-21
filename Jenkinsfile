@@ -2,6 +2,9 @@ pipeline {
     agent any
 
     environment {
+        // Enable Docker BuildKit to fix parallel build race conditions
+        DOCKER_BUILDKIT = '1'
+        
         // Registry & Image Tagging
         DOCKER_REGISTRY = 'abdelrahman1212aa'
         IMAGE_TAG = "${env.BUILD_NUMBER}" // Used alongside latest for versioning

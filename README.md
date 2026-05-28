@@ -11,7 +11,7 @@
 
 ---
 
-## 🏗️ Architecture Overview
+## 🏗️ Architecture Overviewاا
 
 The system is decoupled into specialized microservices to ensure high availability and ease of scaling:
 

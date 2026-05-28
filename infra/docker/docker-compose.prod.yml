@@ -4,6 +4,8 @@ services:
     container_name: jenkins-server
     restart: always
     user: root
+    group_add:
+      - "999"
     ports:
       - "8080:8080"
       - "50000:50000"

@@ -25,15 +25,28 @@ const sequelize = new Sequelize(
   }
 );
 
-const connectDB = async () => {
-  try {
-    await sequelize.authenticate();
-    console.log('✅ Alert API — PostgreSQL connected');
-    await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
-    console.log('✅ Alert API — Tables synced');
-  } catch (error) {
-    console.error('❌ Alert API — DB connection failed:', error.message);
-    process.exit(1);
+const connectDB = async (retries = 5, delay = 5000) => {
+  const host = process.env.DB_HOST || 'localhost';
+  const port = process.env.DB_PORT || 5432;
+  const name = process.env.DB_NAME || 'inventory_dashboard';
+  while (retries > 0) {
+    try {
+      console.log(`📡 Alert API — DB Connection attempt: ${host}:${port} [${name}] (retries left: ${retries - 1})`);
+      await sequelize.authenticate();
+      console.log('✅ Alert API — PostgreSQL connected successfully');
+      await sequelize.sync({ alter: process.env.NODE_ENV === 'development' });
+      console.log('✅ Alert API — Tables synced successfully');
+      return; // Success, exit function
+    } catch (error) {
+      retries -= 1;
+      console.error('❌ Alert API — DB connection failed:', error.message);
+      if (retries === 0) {
+        console.error('❌ Alert API — DB connection failed after maximum retries. Exiting server...');
+        process.exit(1);
+      }
+      console.log(`🕒 Waiting ${delay / 1000}s before next connection attempt...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 };
 

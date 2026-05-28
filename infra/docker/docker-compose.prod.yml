@@ -1,7 +1,5 @@
-version: '3.8'
 
 services:
-  # إضافة جينكينز هنا بصلاحيات كاملة
   jenkins:
     image: jenkins/jenkins:lts
     container_name: jenkins-server
@@ -20,6 +18,8 @@ services:
     image: postgres:16-alpine
     container_name: smart_inventory_db
     restart: always
+    env_file:
+      - .env
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
@@ -29,7 +29,7 @@ services:
     networks:
       - inventory_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d $${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-postgres} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -38,17 +38,14 @@ services:
     image: abdelrahman1212aa/smart-inventory-api:latest
     container_name: smart_inventory_api
     restart: always
+    env_file:
+      - .env
     ports:
       - "5000:5000"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME:-inventory_prod}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET}
     volumes:
       - uploads_data:/app/uploads
     networks:
@@ -61,15 +58,14 @@ services:
     image: abdelrahman1212aa/inventory-api:latest
     container_name: smart_inventory_service
     restart: always
+    env_file:
+      - .env
     ports:
       - "5001:5001"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME:-inventory_prod}
       - PORT=5001
     networks:
       - inventory_network
@@ -81,15 +77,14 @@ services:
     image: abdelrahman1212aa/smart-alert-api:latest
     container_name: smart_alert_service
     restart: always
+    env_file:
+      - .env
     ports:
       - "5002:5002"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
       - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD}
-      - DB_NAME=${DB_NAME:-inventory_prod}
       - PORT=5002
     networks:
       - inventory_network
@@ -117,4 +112,3 @@ networks:
 volumes:
   pg_data:
   uploads_data:
-  jenkins_home:

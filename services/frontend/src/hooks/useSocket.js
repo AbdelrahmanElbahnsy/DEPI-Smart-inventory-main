@@ -10,7 +10,7 @@ export const useSocket = () => {
   useEffect(() => {
     // Connect only once
     if (!socket) {
-      const url = window.location.origin;
+      const url = import.meta.env.VITE_SOCKET_URL || window.location.origin;
       socket = io(url, {
         path: '/socket.io',
         transports: ['websocket', 'polling'],

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Enforce relative path '/api' so the frontend dynamically uses the domain/IP it was loaded from via proxy
-const API_BASE_URL = '/api';
+// Dynamic API URL with fallback to standard relative proxy path '/api'
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

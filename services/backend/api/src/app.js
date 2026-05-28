@@ -27,19 +27,23 @@ const allowedOrigins = [
   'http://localhost',        // Docker nginx (no port)
   'http://127.0.0.1:5173',
   'http://127.0.0.1',
-  'http://68.221.176.92',    // Added explicitly for allowed IP
-  'http://smart-inventory-azureuser.spaincentral.cloudapp.azure.com',
-  'https://smart-inventory-azureuser.spaincentral.cloudapp.azure.com',
 ];
 
-// Allow custom CORS_ORIGIN from env (e.g., production domain)
+// Allow custom CORS_ORIGIN from env (e.g., production domain or IP)
 if (process.env.CORS_ORIGIN) {
-  allowedOrigins.push(...process.env.CORS_ORIGIN.split(','));
+  allowedOrigins.push(...process.env.CORS_ORIGIN.split(',').map(item => item.trim()));
 }
 
-// الحل المضمون: تمرير المصفوفة مباشرة بدل الفانكشن المعقدة
 app.use(cors({
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, server-to-server, or Postman)
+    // and match allowed origins
+    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']

@@ -23,19 +23,27 @@ const sequelize = new Sequelize(
   }
 );
 
-export const connectDB = async () => {
-  try {
-    console.log(`📡 DB Connection: ${config.db.host}:${config.db.port} [${config.db.name}]`);
-    await sequelize.authenticate();
-    console.log('✅ PostgreSQL connected');
-    
-    // Auto-sync tables (safe for both dev/prod)
-    await sequelize.sync({ alter: config.nodeEnv === 'development' });
-    console.log('✅ Tables synced');
-    
-  } catch (error) {
-    console.error('❌ DB connection error:', error.message);
-    process.exit(1);
+export const connectDB = async (retries = 5, delay = 5000) => {
+  while (retries > 0) {
+    try {
+      console.log(`📡 DB Connection attempt: ${config.db.host}:${config.db.port} [${config.db.name}] (retries left: ${retries - 1})`);
+      await sequelize.authenticate();
+      console.log('✅ PostgreSQL connected successfully');
+      
+      // Auto-sync tables (safe for both dev/prod)
+      await sequelize.sync({ alter: config.nodeEnv === 'development' });
+      console.log('✅ Tables synced successfully');
+      return; // Connection and syncing succeeded, break and return
+    } catch (error) {
+      retries -= 1;
+      console.error(`❌ DB connection failed:`, error.message);
+      if (retries === 0) {
+        console.error('❌ DB connection failed after maximum retries. Exiting server...');
+        process.exit(1);
+      }
+      console.log(`🕒 Waiting ${delay / 1000}s before next connection attempt...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 };
 

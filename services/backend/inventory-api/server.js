@@ -18,11 +18,10 @@ app.use(cors({
       'http://localhost',
       'http://127.0.0.1:5173',
       'http://127.0.0.1',
-      'http://68.221.176.92',
-      'http://smart-inventory-azureuser.spaincentral.cloudapp.azure.com',
-      'https://smart-inventory-azureuser.spaincentral.cloudapp.azure.com'
     ];
-    if (process.env.CORS_ORIGIN) allowed.push(...process.env.CORS_ORIGIN.split(','));
+    if (process.env.CORS_ORIGIN) {
+      allowed.push(...process.env.CORS_ORIGIN.split(',').map(item => item.trim()));
+    }
     if (!origin || allowed.includes(origin) || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {

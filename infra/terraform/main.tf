@@ -123,8 +123,8 @@ resource "azurerm_public_ip" "public_ip" {
   allocation_method   = "Static"
   sku                 = "Standard"
   
-  # اختياري: ضفت لك Domain Name عشان تدخل بالاسم بدل الأرقام
-  domain_name_label   = "smart-inventory-${var.admin_username}" 
+  # تم تعديل الاسم هنا ليتوافق مع اليوزر نيم
+  domain_name_label   = "smart-inventory-abdelrahman" 
 }
 
 resource "azurerm_network_interface" "nic" {
@@ -150,16 +150,15 @@ resource "azurerm_linux_virtual_machine" "vm" {
   resource_group_name   = azurerm_resource_group.rg.name
   location              = azurerm_resource_group.rg.location
   size                  = var.vm_size
-  admin_username        = var.admin_username
   
-  disable_password_authentication = true
+  # اليوزر نيم والباسورد بتوعك
+  admin_username        = "abdelrahman"
+  admin_password        = "Abdelrahman@123456"
+  
+  # تفعيل الدخول بالباسورد بدل الـ SSH
+  disable_password_authentication = false
 
   network_interface_ids = [azurerm_network_interface.nic.id]
-
-  admin_ssh_key {
-    username   = var.admin_username
-    public_key = file("~/.ssh/id_rsa.pub")
-  }
 
   os_disk {
     caching              = "ReadWrite"
@@ -182,7 +181,7 @@ resource "azurerm_linux_virtual_machine" "vm" {
 resource "local_file" "ansible_inventory" {
   content = templatefile("${path.module}/inventory.tmpl", {
     ip   = azurerm_linux_virtual_machine.vm.public_ip_address
-    user = var.admin_username
+    user = "abdelrahman"
   })
   filename = "${path.module}/../ansible/inventory.ini"
 }

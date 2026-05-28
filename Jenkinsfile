@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Docker Login') {
             steps {
-                // تأكد أن الـ ID هنا مطابق تماماً لما هو موجود في Jenkins Credentials
+                // ID مطابق لما هو موجود في Jenkins Credentials
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                     sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
                 }
@@ -54,7 +54,7 @@ pipeline {
 
         stage('Smart Deployment to Azure') {
             steps {
-                // تأكد أن الـ ID هنا مطابق للـ Credentials الخاصة بالسيرفر
+                // ID مطابق للـ Credentials الخاصة بالسيرفر
                 sshagent(['server-ssh-credentials']) { 
                     sh '''
                     ssh -o StrictHostKeyChecking=no abdelrahman@68.221.69.163 << EOF

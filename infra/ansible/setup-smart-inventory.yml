@@ -85,6 +85,9 @@
           JWT_REFRESH_SECRET={{ jwt_refresh_secret }}
           IMAGE_TAG={{ image_tag }}
           DOCKER_REGISTRY={{ docker_registry }}
+          VITE_API_URL={{ vite_api_url }}
+          VITE_SOCKET_URL={{ vite_socket_url }}
+          CORS_ORIGIN={{ cors_origin }}
         owner: "{{ ansible_user }}"
         group: "{{ ansible_user }}"
         mode: '0600'

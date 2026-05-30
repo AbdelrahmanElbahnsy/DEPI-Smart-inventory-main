@@ -1,6 +1,9 @@
 services:
   jenkins:
-    image: jenkins/jenkins:lts
+    build:
+      context: .
+      dockerfile: Dockerfile.jenkins
+    image: custom-jenkins:latest
     container_name: jenkins-server
     restart: always
     user: root
@@ -18,6 +21,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: smart_inventory_db
+    pull_policy: always
     restart: always
     env_file:
       - .env
@@ -38,6 +42,7 @@ services:
   backend:
     image: abdelrahman1212aa/smart-inventory-api:latest
     container_name: smart_inventory_api
+    pull_policy: always
     restart: always
     env_file:
       - .env
@@ -54,10 +59,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   inventory-api:
     image: abdelrahman1212aa/inventory-api:latest
     container_name: smart_inventory_service
+    pull_policy: always
     restart: always
     env_file:
       - .env
@@ -73,10 +85,17 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5001/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   alert-api:
     image: abdelrahman1212aa/smart-alert-api:latest
     container_name: smart_alert_service
+    pull_policy: always
     restart: always
     env_file:
       - .env
@@ -92,19 +111,29 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:5002/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
   frontend:
     image: abdelrahman1212aa/smart-inventory-ui:latest
     container_name: smart_inventory_ui
+    pull_policy: always
     restart: always
     ports:
       - "80:80"
     networks:
       - inventory_network
     depends_on:
-      - backend
-      - inventory-api
-      - alert-api
+      backend:
+        condition: service_healthy
+      inventory-api:
+        condition: service_healthy
+      alert-api:
+        condition: service_healthy
 
 networks:
   inventory_network:
@@ -113,4 +142,4 @@ networks:
 volumes:
   pg_data:
   uploads_data:
-  jenkins_home: # أضفتها عشان الـ Volume بتاع الجينكينز
+  jenkins_home:

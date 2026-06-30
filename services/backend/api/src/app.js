@@ -21,33 +21,14 @@ const __dirname = path.dirname(__filename);
 const app = express();
 
 // ─── CORS Configuration ───
-const allowedOrigins = [
-  'http://localhost:5173',   // Vite dev server
-  'http://localhost:80',     // Docker nginx
-  'http://localhost',        // Docker nginx (no port)
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1',
-];
-
-// Allow custom CORS_ORIGIN from env (e.g., production domain or IP)
-if (process.env.CORS_ORIGIN) {
-  allowedOrigins.push(...process.env.CORS_ORIGIN.split(',').map(item => item.trim()));
-}
-
+// Allow all origins dynamically while supporting credentials (cookies/auth headers)
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, server-to-server, or Postman)
-    // and match allowed origins
-    if (!origin || allowedOrigins.includes(origin) || process.env.NODE_ENV !== 'production') {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: true,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Origin', 'Accept']
 }));
+
 
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(morgan('dev'));

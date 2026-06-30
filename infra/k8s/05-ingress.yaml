@@ -6,11 +6,23 @@ metadata:
     app.kubernetes.io/part-of: smart-inventory
   annotations:
     kubernetes.io/ingress.class: "traefik"
+    # Enable websocket support (important for Socket.io if used by the backend)
+    traefik.ingress.kubernetes.io/router.entrypoints: web
 spec:
   ingressClassName: traefik
   rules:
   - http:
       paths:
+      # Route all API requests directly to the Backend Service
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: backend
+            port:
+              number: 5000
+              
+      # Route all other traffic (static assets, UI pages) to the Frontend Service
       - path: /
         pathType: Prefix
         backend:

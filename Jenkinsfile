@@ -1,11 +1,7 @@
 pipeline {
+    // التعديل هنا: استخدمنا label لربط الـ pipeline بالـ cloud agent
     agent {
-        docker {
-            image 'docker:24.0.5-dind'
-            label 'docker-agent'
-            // الربط بالـ socket عشان الـ agent يقدر يعمل build و push
-            args '-v /var/run/docker.sock:/var/run/docker.sock' 
-        }
+        label 'docker-agent'
     }
 
     environment {
@@ -15,6 +11,7 @@ pipeline {
     }
 
     stages {
+        // باقي الـ stages زي ما هي بالظبط...
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {

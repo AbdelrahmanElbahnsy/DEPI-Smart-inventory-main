@@ -10,6 +10,7 @@ data:
   DB_PORT: "5432"
   DB_NAME: "inventory_prod"
   DB_USER: "postgres"
+  CORS_ORIGIN: "http://68.221.69.163" # Add your domain here if you map one later (e.g., "http://68.221.69.163,https://yourdomain.com")
 ---
 apiVersion: v1
 kind: Secret

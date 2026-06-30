@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: inventory-config
+  labels:
+    app.kubernetes.io/part-of: smart-inventory
+data:
+  NODE_ENV: "production"
+  DB_HOST: "smart-inventory-db"
+  DB_PORT: "5432"
+  DB_NAME: "inventory_prod"
+  DB_USER: "postgres"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: inventory-secrets
+  labels:
+    app.kubernetes.io/part-of: smart-inventory
+type: Opaque
+data:
+  DB_PASSWORD: UHJvZFNlY3VyZVBhc3N3b3JkMjAyNiE=
+  JWT_SECRET: U3VwZXJTZWNyZXRQcm9kSldUS2V5XzIwMjZfeHl6
+  JWT_REFRESH_SECRET: U3VwZXJTZWNyZXRQcm9kUmVmcmVzaEtleV8yMDI2X3h5eg==

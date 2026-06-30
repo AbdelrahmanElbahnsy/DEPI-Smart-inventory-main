@@ -1,19 +1,22 @@
 pipeline {
-    agent any
+    agent {
+        docker {
+            image 'docker:24.0.5-dind'
+            label 'docker-agent'
+            // الربط بالـ socket عشان الـ agent يقدر يعمل build و push
+            args '-v /var/run/docker.sock:/var/run/docker.sock' 
+        }
+    }
 
     environment {
-        // تأكد أن هذا هو اسم المستخدم الخاص بك على Docker Hub
         DOCKER_REGISTRY = 'abdelrahman1212aa'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
-        
-        // Frontend Build Args
         FRONTEND_VITE_API_URL = '/api'
     }
 
     stages {
         stage('Docker Login') {
             steps {
-                // ID مطابق لما هو موجود في Jenkins Credentials
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                     sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
                 }
@@ -92,17 +95,8 @@ pipeline {
         }
 
         stage('Smart Deployment to Azure') {
-            when {
-                anyOf {
-                    changeset "services/**"
-                    changeset "infra/docker/**"
-                    changeset "Jenkinsfile"
-                    expression { env.BUILD_NUMBER == '1' }
-                }
-            }
             steps {
                 echo "🚀 Deploying to Azure Server..."
-                // ID مطابق للـ Credentials الخاصة بالسيرفر
                 sshagent(['server-ssh-credentials']) { 
                     sh '''
                     ssh -o StrictHostKeyChecking=no abdelrahman@68.221.69.163 << EOF
@@ -111,9 +105,6 @@ pipeline {
                         docker compose down
                         docker compose up -d
                         docker image prune -f
-                        echo "--------------------------"
-                        echo "Containers Status:"
-                        docker ps
                     EOF
                     '''
                 }
@@ -122,14 +113,9 @@ pipeline {
     }
 
     post {
-        success {
-            echo "✅ Pipeline completed successfully. All services are built, pushed, and deployed!"
-        }
-        failure {
-            echo "❌ Pipeline failed! Please check the Jenkins logs to investigate."
-        }
+        success { echo "✅ Pipeline completed successfully!" }
+        failure { echo "❌ Pipeline failed!" }
         always {
-            echo "🧹 Cleaning up..."
             sh "docker logout || true"
             sh "docker system prune -f || true"
         }

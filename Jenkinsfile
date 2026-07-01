@@ -103,10 +103,10 @@ pipeline {
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml"
 
-                // Use Dockerized kubectl to apply changes without needing local kubectl installation
-                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config -v ${WORKSPACE}/infra/k8s:/infra/k8s bitnami/kubectl:latest apply -f /infra/k8s/"
+                // Apply manifests using dockerized kubectl with explicit mapping to /app/k8s
+                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config -v ${WORKSPACE}/infra/k8s:/app/k8s bitnami/kubectl:latest apply -f /app/k8s/"
                 
-                // Rollout status check using dockerized kubectl
+                // Rollout status check
                 sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config bitnami/kubectl:latest rollout status deployment/backend --timeout=120s"
             }
         }

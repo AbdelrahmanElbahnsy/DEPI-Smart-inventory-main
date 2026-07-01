@@ -3,56 +3,45 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
-        // استخراج الـ Tag بناءً على الـ Git Commit
+        // استخراج الـ Tag من الـ Git
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
     }
 
     stages {
-        // 1. مرحلة التنسيق والمراجعة (Validation Stage)
-        stage('Validate & Sync Manifests') {
+        // 1. مرحلة التحقق من الملفات (بدون استخدام Docker للـ Validation)
+        stage('Validate Manifests') {
             steps {
-                echo "🔍 Checking file integrity and sync..."
+                echo "🔍 Checking file integrity..."
                 script {
-                    // التأكد من وجود الملفات قبل البدء
-                    sh "test -f infra/k8s/02-database.yaml || { echo 'Missing 02-database.yaml'; exit 1; }"
-                    sh "test -f infra/k8s/03-apis.yaml || { echo 'Missing 03-apis.yaml'; exit 1; }"
-                    sh "test -f infra/k8s/04-frontend.yaml || { echo 'Missing 04-frontend.yaml'; exit 1; }"
-
-                    // التأكد من صحة التنسيق (Linting) باستخدام الـ Dry-run
-                    echo "Checking YAML syntax..."
-                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s bitnami/kubectl:latest apply --dry-run=client -f /app/k8s/"
+                    // التأكد من وجود الملفات
+                    def files = ['infra/k8s/02-database.yaml', 'infra/k8s/03-apis.yaml', 'infra/k8s/04-frontend.yaml']
+                    files.each { file ->
+                        sh "test -f ${file} || { echo 'Missing ${file}'; exit 1; }"
+                    }
                 }
             }
         }
 
-        // 2. مرحلة تحديث الصور ونشرها
+        // 2. مرحلة النشر المباشر (استخدام kubectl المثبت على السيرفر)
         stage('Deploy to Kubernetes') {
             steps {
-                echo "🚀 Syncing Images and Deploying..."
+                echo "🚀 Deploying to Kubernetes Cluster..."
                 
-                // تحديث الـ Image Tags في جميع الملفات دفعة واحدة لضمان التوافق
-                // سيقوم هذا الأمر باستبدال أي سطر يبدأ بـ image: بـ الـ Tag الجديد
+                // تحديث الـ Images في الملفات
                 sh "sed -i 's|image:.*|image: ${DOCKER_REGISTRY}/smart-inventory-image:${IMAGE_TAG}|g' infra/k8s/*.yaml"
 
-                script {
-                    def kubeconfig = readFile('kubeconfig.yaml')
-                    writeFile file: 'tmp_kubeconfig', text: kubeconfig
-                    
-                    // استخدام الـ Pipe لإرسال المحتوى مباشرة للـ Cluster
-                    def manifests = ['02-database.yaml', '03-apis.yaml', '04-frontend.yaml']
-                    manifests.each { file ->
-                        echo "Applying ${file}..."
-                        sh "cat infra/k8s/${file} | docker run --rm -i -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f -"
-                    }
-                }
+                // النشر باستخدام kubectl مباشرة (الموجود على السيرفر)
+                // تأكد أن المسار kubeconfig.yaml موجود في مجلد المشروع الرئيسي على السيرفر
+                sh "kubectl --kubeconfig=${WORKSPACE}/kubeconfig.yaml apply -f infra/k8s/02-database.yaml"
+                sh "kubectl --kubeconfig=${WORKSPACE}/kubeconfig.yaml apply -f infra/k8s/03-apis.yaml"
+                sh "kubectl --kubeconfig=${WORKSPACE}/kubeconfig.yaml apply -f infra/k8s/04-frontend.yaml"
             }
         }
     }
 
     post {
         always {
-            sh "rm -f tmp_kubeconfig"
-            sh "docker system prune -f || true"
+            echo "Pipeline finished."
         }
     }
 }

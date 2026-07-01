@@ -3,82 +3,47 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
+        // استخراج الـ Tag بناءً على الـ Git Commit
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-        FRONTEND_VITE_API_URL = '/api'
-        
-        BACKEND_IMAGE   = 'smart-inventory-backend'
-        INVENTORY_IMAGE = 'smart-inventory-inventory-api'
-        ALERT_IMAGE     = 'smart-inventory-alert-api'
-        FRONTEND_IMAGE  = 'smart-inventory-ui'
     }
 
     stages {
-        stage('Docker Login') {
+        // 1. مرحلة التنسيق والمراجعة (Validation Stage)
+        stage('Validate & Sync Manifests') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                    sh 'echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin'
+                echo "🔍 Checking file integrity and sync..."
+                script {
+                    // التأكد من وجود الملفات قبل البدء
+                    sh "test -f infra/k8s/02-database.yaml || { echo 'Missing 02-database.yaml'; exit 1; }"
+                    sh "test -f infra/k8s/03-apis.yaml || { echo 'Missing 03-apis.yaml'; exit 1; }"
+                    sh "test -f infra/k8s/04-frontend.yaml || { echo 'Missing 04-frontend.yaml'; exit 1; }"
+
+                    // التأكد من صحة التنسيق (Linting) باستخدام الـ Dry-run
+                    echo "Checking YAML syntax..."
+                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s bitnami/kubectl:latest apply --dry-run=client -f /app/k8s/"
                 }
             }
         }
 
-        stage('Pull Existing Images for Cache') {
-            steps {
-                echo "📥 Pulling existing images from Docker Hub..."
-                sh "docker pull ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest || true"
-                sh "docker pull ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest || true"
-                sh "docker pull ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest || true"
-                sh "docker pull ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest || true"
-            }
-        }
-
-        stage('Build API - Backend') {
-            when { anyOf { changeset "services/backend/api/**"; changeset "services/database/**"; expression { env.BUILD_NUMBER == '1' } } }
-            steps {
-                sh "docker build -t ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest -t ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG} -f services/backend/api/Dockerfile ."
-                sh "docker push ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest && docker push ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}"
-            }
-        }
-
-        stage('Build API - Inventory') {
-            when { anyOf { changeset "services/backend/inventory-api/**"; expression { env.BUILD_NUMBER == '1' } } }
-            steps {
-                sh "docker build -t ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest -t ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG} -f services/backend/inventory-api/Dockerfile ."
-                sh "docker push ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest && docker push ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}"
-            }
-        }
-
-        stage('Build API - Alert') {
-            when { anyOf { changeset "services/backend/alert-api/**"; expression { env.BUILD_NUMBER == '1' } } }
-            steps {
-                sh "docker build -t ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest -t ${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG} -f services/backend/alert-api/Dockerfile ."
-                sh "docker push ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest && docker push ${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}"
-            }
-        }
-
-        stage('Build UI - Frontend') {
-            when { anyOf { changeset "services/frontend/**"; expression { env.BUILD_NUMBER == '1' } } }
-            steps {
-                sh "docker build --build-arg VITE_API_URL=${FRONTEND_VITE_API_URL} -t ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest -t ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG} -f services/frontend/Dockerfile ."
-                sh "docker push ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest && docker push ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}"
-            }
-        }
-
+        // 2. مرحلة تحديث الصور ونشرها
         stage('Deploy to Kubernetes') {
             steps {
-                echo "🚀 Deploying Smart Inventory..."
+                echo "🚀 Syncing Images and Deploying..."
                 
-                // تحديث الـ YAML files
-                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-backend:latest|${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
-                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-inventory-api:latest|${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
-                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
-                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml"
+                // تحديث الـ Image Tags في جميع الملفات دفعة واحدة لضمان التوافق
+                // سيقوم هذا الأمر باستبدال أي سطر يبدأ بـ image: بـ الـ Tag الجديد
+                sh "sed -i 's|image:.*|image: ${DOCKER_REGISTRY}/smart-inventory-image:${IMAGE_TAG}|g' infra/k8s/*.yaml"
 
-                // استخدام writeFile لكتابة ملف الكونفيج في الـ Workspace ثم عمل mount له
                 script {
-                    writeFile file: 'tmp_kubeconfig', text: readFile('kubeconfig.yaml')
-                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f /app/k8s/02-database.yaml"
-                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f /app/k8s/03-apis.yaml"
-                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f /app/k8s/04-frontend.yaml"
+                    def kubeconfig = readFile('kubeconfig.yaml')
+                    writeFile file: 'tmp_kubeconfig', text: kubeconfig
+                    
+                    // استخدام الـ Pipe لإرسال المحتوى مباشرة للـ Cluster
+                    def manifests = ['02-database.yaml', '03-apis.yaml', '04-frontend.yaml']
+                    manifests.each { file ->
+                        echo "Applying ${file}..."
+                        sh "cat infra/k8s/${file} | docker run --rm -i -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f -"
+                    }
                 }
             }
         }
@@ -86,7 +51,7 @@ pipeline {
 
     post {
         always {
-            sh "docker logout || true"
+            sh "rm -f tmp_kubeconfig"
             sh "docker system prune -f || true"
         }
     }

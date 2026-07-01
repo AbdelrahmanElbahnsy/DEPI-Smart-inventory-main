@@ -3,11 +3,9 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
-        // Fetch short git commit hash dynamically
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         FRONTEND_VITE_API_URL = '/api'
         
-        // Standardized image names
         BACKEND_IMAGE   = 'smart-inventory-backend'
         INVENTORY_IMAGE = 'smart-inventory-inventory-api'
         ALERT_IMAGE     = 'smart-inventory-alert-api'
@@ -25,7 +23,7 @@ pipeline {
 
         stage('Pull Existing Images for Cache') {
             steps {
-                echo "📥 Pulling existing images from Docker Hub to use as build cache..."
+                echo "📥 Pulling existing images from Docker Hub..."
                 sh "docker pull ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest || true"
                 sh "docker pull ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest || true"
                 sh "docker pull ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest || true"
@@ -67,24 +65,20 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo "🚀 Deploying Smart Inventory to Kubernetes Cluster..."
+                echo "🚀 Deploying Smart Inventory..."
                 
-                // Update manifests with current image tag
+                // تحديث الـ YAML files
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-backend:latest|${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-inventory-api:latest|${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml"
 
-                // Apply manifests using temporary config file inside the container
+                // استخدام writeFile لكتابة ملف الكونفيج في الـ Workspace ثم عمل mount له
                 script {
-                    def kubeconfig = readFile('kubeconfig.yaml')
-                    sh """
-                    docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s bitnami/kubectl:latest sh -c \
-                    "echo '${kubeconfig}' > /tmp/config && export KUBECONFIG=/tmp/config && \
-                    kubectl apply -f /app/k8s/02-database.yaml && \
-                    kubectl apply -f /app/k8s/03-apis.yaml && \
-                    kubectl apply -f /app/k8s/04-frontend.yaml"
-                    """
+                    writeFile file: 'tmp_kubeconfig', text: readFile('kubeconfig.yaml')
+                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f /app/k8s/02-database.yaml"
+                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f /app/k8s/03-apis.yaml"
+                    sh "docker run --rm -v ${WORKSPACE}/infra/k8s:/app/k8s -v ${WORKSPACE}/tmp_kubeconfig:/root/.kube/config bitnami/kubectl:latest apply -f /app/k8s/04-frontend.yaml"
                 }
             }
         }

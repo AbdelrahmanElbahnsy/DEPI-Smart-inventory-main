@@ -3,9 +3,11 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
+        // Fetch short git commit hash dynamically
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         FRONTEND_VITE_API_URL = '/api'
         
+        // Standardized image names
         BACKEND_IMAGE   = 'smart-inventory-backend'
         INVENTORY_IMAGE = 'smart-inventory-inventory-api'
         ALERT_IMAGE     = 'smart-inventory-alert-api'
@@ -23,7 +25,7 @@ pipeline {
 
         stage('Pull Existing Images for Cache') {
             steps {
-                echo "📥 Pulling existing images from Docker Hub..."
+                echo "📥 Pulling existing images from Docker Hub to use as build cache..."
                 sh "docker pull ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest || true"
                 sh "docker pull ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest || true"
                 sh "docker pull ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest || true"
@@ -31,7 +33,6 @@ pipeline {
             }
         }
 
-        // ... (مراحل الـ Build كما هي) ...
         stage('Build API - Backend') {
             when { anyOf { changeset "services/backend/api/**"; changeset "services/database/**"; expression { env.BUILD_NUMBER == '1' } } }
             steps {
@@ -66,15 +67,15 @@ pipeline {
 
         stage('Deploy to Kubernetes') {
             steps {
-                echo "🚀 Deploying Smart Inventory..."
+                echo "🚀 Deploying Smart Inventory to Kubernetes Cluster..."
                 
-                // تحديث المانيفستس
+                // Update manifests with current image tag
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-backend:latest|${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-inventory-api:latest|${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml"
 
-                // الحل النهائي: إنشاء ملف مؤقت داخل الكونتينر باستخدام cat
+                // Apply manifests using temporary config file inside the container
                 script {
                     def kubeconfig = readFile('kubeconfig.yaml')
                     sh """

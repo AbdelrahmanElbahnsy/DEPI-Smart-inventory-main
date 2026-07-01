@@ -3,9 +3,11 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
+        // Fetch short git commit hash dynamically
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         FRONTEND_VITE_API_URL = '/api'
         
+        // Standardized image names
         BACKEND_IMAGE   = 'smart-inventory-backend'
         INVENTORY_IMAGE = 'smart-inventory-inventory-api'
         ALERT_IMAGE     = 'smart-inventory-alert-api'
@@ -102,13 +104,15 @@ pipeline {
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
                 sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml"
 
-                // Apply manifests one by one to avoid directory reading errors
-                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config -v ${WORKSPACE}/infra/k8s:/app/k8s bitnami/kubectl:latest apply -f /app/k8s/02-database.yaml"
-                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config -v ${WORKSPACE}/infra/k8s:/app/k8s bitnami/kubectl:latest apply -f /app/k8s/03-apis.yaml"
-                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config -v ${WORKSPACE}/infra/k8s:/app/k8s bitnami/kubectl:latest apply -f /app/k8s/04-frontend.yaml"
+                // Apply manifests using full workspace mount for reliability
+                sh """
+                docker run --rm -v ${WORKSPACE}:/workspace bitnami/kubectl:latest apply -f /workspace/infra/k8s/02-database.yaml --kubeconfig=/workspace/kubeconfig.yaml
+                docker run --rm -v ${WORKSPACE}:/workspace bitnami/kubectl:latest apply -f /workspace/infra/k8s/03-apis.yaml --kubeconfig=/workspace/kubeconfig.yaml
+                docker run --rm -v ${WORKSPACE}:/workspace bitnami/kubectl:latest apply -f /workspace/infra/k8s/04-frontend.yaml --kubeconfig=/workspace/kubeconfig.yaml
+                """
                 
-                // Status check
-                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config bitnami/kubectl:latest rollout status deployment/smart_inventory_api --timeout=120s"
+                // Rollout status check
+                sh "docker run --rm -v ${WORKSPACE}:/workspace bitnami/kubectl:latest rollout status deployment/smart_inventory_api --kubeconfig=/workspace/kubeconfig.yaml --timeout=120s"
             }
         }
     }

@@ -94,4 +94,4 @@ ENV/
 # ─── JENKINS & CI/CD ───
 jenkins-data/
 **/jenkins_home/
-!/infra/docker/jenkins_home/
+!/infra/docker/jenkins_home/infra/docker/jenkins_home/

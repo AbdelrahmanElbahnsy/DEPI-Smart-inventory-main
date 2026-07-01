@@ -24,30 +24,30 @@ pipeline {
             }
         }
 
-        // 2. مرحلة النشر (Deployment)
         stage('Deploy to Kubernetes') {
             steps {
                 echo "🚀 Deploying to Kubernetes Cluster..."
                 
-                // تحديث الـ Images في جميع الملفات دفعة واحدة باستخدام الـ Tag الموحد
+                // تحديث الـ Images
                 sh "sed -i 's|image:.*|image: ${DOCKER_REGISTRY}/smart-inventory-image:${IMAGE_TAG}|g' infra/k8s/*.yaml"
 
-                // النشر باستخدام kubectl المثبت على السيرفر (باستخدام المسار الجديد في /tmp)
-                sh "kubectl --kubeconfig=${KUBECONFIG_PATH} apply -f infra/k8s/02-database.yaml"
-                sh "kubectl --kubeconfig=${KUBECONFIG_PATH} apply -f infra/k8s/03-apis.yaml"
-                sh "kubectl --kubeconfig=${KUBECONFIG_PATH} apply -f infra/k8s/04-frontend.yaml"
+                // استخدام الـ bitnami/kubectl كـ CLI ونمرر له ملف الكونفيج كـ Volume
+                // ده الحل اللي هيشتغل داخل الحاوية 100%
+                sh """
+                docker run --rm \
+                -v ${WORKSPACE}/infra/k8s:/app/k8s \
+                -v /tmp/my-k8s-config.yaml:/root/.kube/config \
+                bitnami/kubectl:latest apply -f /app/k8s/02-database.yaml
                 
-                echo "🎉 Deployment completed successfully using tag: ${IMAGE_TAG}"
+                docker run --rm \
+                -v ${WORKSPACE}/infra/k8s:/app/k8s \
+                -v /tmp/my-k8s-config.yaml:/root/.kube/config \
+                bitnami/kubectl:latest apply -f /app/k8s/03-apis.yaml
+                
+                docker run --rm \
+                -v ${WORKSPACE}/infra/k8s:/app/k8s \
+                -v /tmp/my-k8s-config.yaml:/root/.kube/config \
+                bitnami/kubectl:latest apply -f /app/k8s/04-frontend.yaml
+                """
             }
         }
-    }
-
-    post {
-        always {
-            echo "Pipeline finished."
-        }
-        failure {
-            echo "❌ Pipeline failed. Please check the logs above."
-        }
-    }
-}

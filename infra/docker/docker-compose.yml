@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   jenkins:
     image: jenkins/jenkins:lts
@@ -39,12 +41,10 @@ services:
   backend:
     image: abdelrahman1212aa/smart-inventory-backend:${IMAGE_TAG:-latest}
     container_name: smart_inventory_api
-    pull_policy: always
+    pull_policy: missing
     restart: always
     env_file:
       - .env
-    # ports:
-    #   - "5000:5000"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -66,12 +66,10 @@ services:
   inventory-api:
     image: abdelrahman1212aa/smart-inventory-inventory-api:${IMAGE_TAG:-latest}
     container_name: smart_inventory_service
-    pull_policy: always
+    pull_policy: missing
     restart: always
     env_file:
       - .env
-    # ports:
-    #   - "5001:5001"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -92,12 +90,10 @@ services:
   alert-api:
     image: abdelrahman1212aa/smart-inventory-alert-api:${IMAGE_TAG:-latest}
     container_name: smart_alert_service
-    pull_policy: always
+    pull_policy: missing
     restart: always
     env_file:
       - .env
-    # ports:
-    #   - "5002:5002"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -118,7 +114,7 @@ services:
   frontend:
     image: abdelrahman1212aa/smart-inventory-ui:${IMAGE_TAG:-latest}
     container_name: smart_inventory_ui
-    pull_policy: always
+    pull_policy: missing
     restart: always
     ports:
       - "80:80"

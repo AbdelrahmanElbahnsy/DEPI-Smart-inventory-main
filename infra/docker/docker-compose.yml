@@ -37,14 +37,14 @@ services:
       retries: 5
 
   backend:
-    image: abdelrahman1212aa/smart-inventory-api:latest
+    image: abdelrahman1212aa/smart-inventory-backend:${IMAGE_TAG:-latest}
     container_name: smart_inventory_api
     pull_policy: always
     restart: always
     env_file:
       - .env
-    ports:
-      - "5000:5000"
+    # ports:
+    #   - "5000:5000"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -64,14 +64,14 @@ services:
       start_period: 10s
 
   inventory-api:
-    image: abdelrahman1212aa/inventory-api:latest
+    image: abdelrahman1212aa/smart-inventory-inventory-api:${IMAGE_TAG:-latest}
     container_name: smart_inventory_service
     pull_policy: always
     restart: always
     env_file:
       - .env
-    ports:
-      - "5001:5001"
+    # ports:
+    #   - "5001:5001"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -90,14 +90,14 @@ services:
       start_period: 10s
 
   alert-api:
-    image: abdelrahman1212aa/smart-alert-api:latest
+    image: abdelrahman1212aa/smart-inventory-alert-api:${IMAGE_TAG:-latest}
     container_name: smart_alert_service
     pull_policy: always
     restart: always
     env_file:
       - .env
-    ports:
-      - "5002:5002"
+    # ports:
+    #   - "5002:5002"
     environment:
       - NODE_ENV=production
       - DB_HOST=db
@@ -116,7 +116,7 @@ services:
       start_period: 10s
 
   frontend:
-    image: abdelrahman1212aa/smart-inventory-ui:latest
+    image: abdelrahman1212aa/smart-inventory-ui:${IMAGE_TAG:-latest}
     container_name: smart_inventory_ui
     pull_policy: always
     restart: always

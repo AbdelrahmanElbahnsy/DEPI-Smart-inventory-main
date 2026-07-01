@@ -1,17 +1,22 @@
 pipeline {
-    // التعديل هنا: استخدمنا label لربط الـ pipeline بالـ cloud agent
     agent {
         label 'docker-agent'
     }
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        // Fetch short git commit hash dynamically
+        IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         FRONTEND_VITE_API_URL = '/api'
+        
+        // Standardized image names
+        BACKEND_IMAGE   = 'smart-inventory-backend'
+        INVENTORY_IMAGE = 'smart-inventory-inventory-api'
+        ALERT_IMAGE     = 'smart-inventory-alert-api'
+        FRONTEND_IMAGE  = 'smart-inventory-ui'
     }
 
     stages {
-        // باقي الـ stages زي ما هي بالظبط...
         stage('Docker Login') {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
@@ -23,10 +28,10 @@ pipeline {
         stage('Pull Existing Images for Cache') {
             steps {
                 echo "📥 Pulling existing images from Docker Hub to use as build cache..."
-                sh "docker pull ${DOCKER_REGISTRY}/smart-inventory-api:latest || true"
-                sh "docker pull ${DOCKER_REGISTRY}/inventory-api:latest || true"
-                sh "docker pull ${DOCKER_REGISTRY}/smart-alert-api:latest || true"
-                sh "docker pull ${DOCKER_REGISTRY}/smart-inventory-ui:latest || true"
+                sh "docker pull ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest || true"
+                sh "docker pull ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest || true"
+                sh "docker pull ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest || true"
+                sh "docker pull ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest || true"
             }
         }
 
@@ -40,9 +45,9 @@ pipeline {
             }
             steps {
                 echo "🛠️ Building Backend API..."
-                sh "docker build --cache-from ${DOCKER_REGISTRY}/smart-inventory-api:latest -f services/backend/api/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-api:latest -t ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG} ."
-                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:latest"
-                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG}"
+                sh "docker build --cache-from ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest -f services/backend/api/Dockerfile -t ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest -t ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest"
+                sh "docker push ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}"
             }
         }
 
@@ -55,9 +60,9 @@ pipeline {
             }
             steps {
                 echo "🛠️ Building Inventory API..."
-                sh "docker build --cache-from ${DOCKER_REGISTRY}/inventory-api:latest -f services/backend/inventory-api/Dockerfile -t ${DOCKER_REGISTRY}/inventory-api:latest -t ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG} ."
-                sh "docker push ${DOCKER_REGISTRY}/inventory-api:latest"
-                sh "docker push ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG}"
+                sh "docker build --cache-from ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest -f services/backend/inventory-api/Dockerfile -t ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest -t ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:latest"
+                sh "docker push ${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}"
             }
         }
 
@@ -70,9 +75,9 @@ pipeline {
             }
             steps {
                 echo "🛠️ Building Alert API..."
-                sh "docker build --cache-from ${DOCKER_REGISTRY}/smart-alert-api:latest -f services/backend/alert-api/Dockerfile -t ${DOCKER_REGISTRY}/smart-alert-api:latest -t ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG} ."
-                sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:latest"
-                sh "docker push ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG}"
+                sh "docker build --cache-from ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest -f services/backend/alert-api/Dockerfile -t ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest -t ${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/${ALERT_IMAGE}:latest"
+                sh "docker push ${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}"
             }
         }
 
@@ -85,26 +90,31 @@ pipeline {
             }
             steps {
                 echo "🛠️ Building Frontend UI..."
-                sh "docker build --cache-from ${DOCKER_REGISTRY}/smart-inventory-ui:latest --build-arg VITE_API_URL=${FRONTEND_VITE_API_URL} -f services/frontend/Dockerfile -t ${DOCKER_REGISTRY}/smart-inventory-ui:latest -t ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG} ."
-                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:latest"
-                sh "docker push ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}"
+                sh "docker build --cache-from ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest --build-arg VITE_API_URL=${FRONTEND_VITE_API_URL} -f services/frontend/Dockerfile -t ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest -t ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG} ."
+                sh "docker push ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest"
+                sh "docker push ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}"
             }
         }
 
-        stage('Smart Deployment to Azure') {
+        stage('Deploy to Kubernetes') {
             steps {
-                echo "🚀 Deploying to Azure Server..."
-                sshagent(['server-ssh-credentials']) { 
-                    sh '''
-                    ssh -o StrictHostKeyChecking=no abdelrahman@68.221.69.163 << EOF
-                        cd /home/abdelrahman/app/infra/docker
-                        docker compose pull
-                        docker compose down
-                        docker compose up -d
-                        docker image prune -f
-                    EOF
-                    '''
-                }
+                echo "🚀 Deploying Smart Inventory to Kubernetes Cluster..."
+                sh """
+                # Set dynamic image tags in manifests
+                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-backend:latest|${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml
+                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-inventory-api:latest|${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml
+                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml
+                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml
+
+                # Apply manifests to cluster using local kubeconfig
+                kubectl apply -f infra/k8s/ --kubeconfig=kubeconfig.yaml
+                
+                # Check status of deployments
+                kubectl rollout status deployment/backend --kubeconfig=kubeconfig.yaml --timeout=120s
+                kubectl rollout status deployment/inventory-api --kubeconfig=kubeconfig.yaml --timeout=120s
+                kubectl rollout status deployment/alert-api --kubeconfig=kubeconfig.yaml --timeout=120s
+                kubectl rollout status deployment/frontend --kubeconfig=kubeconfig.yaml --timeout=120s
+                """
             }
         }
     }

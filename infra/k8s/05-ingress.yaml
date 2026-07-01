@@ -13,7 +13,25 @@ spec:
   rules:
   - http:
       paths:
-      # Route all API requests directly to the Backend Service
+      # Route inventory microservice API requests
+      - path: /api/inventory
+        pathType: Prefix
+        backend:
+          service:
+            name: inventory-api
+            port:
+              number: 5001
+
+      # Route alert microservice API requests
+      - path: /api/alerts
+        pathType: Prefix
+        backend:
+          service:
+            name: alert-api
+            port:
+              number: 5002
+
+      # Route all other API requests directly to the Backend Service
       - path: /api
         pathType: Prefix
         backend:

@@ -1,3 +1,16 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: uploads-pvc
+  labels:
+    app.kubernetes.io/part-of: smart-inventory
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,9 +28,13 @@ spec:
       labels:
         app: backend
     spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z smart-inventory-db 5432; do echo waiting for database; sleep 2; done']
       containers:
       - name: backend-api
-        image: abdelrahman1212aa/smart-inventory-api:latest
+        image: abdelrahman1212aa/smart-inventory-backend:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
@@ -77,6 +94,13 @@ spec:
           initialDelaySeconds: 5
           periodSeconds: 5
           timeoutSeconds: 5
+        volumeMounts:
+        - name: uploads-volume
+          mountPath: /app/uploads
+      volumes:
+      - name: uploads-volume
+        persistentVolumeClaim:
+          claimName: uploads-pvc
 ---
 apiVersion: v1
 kind: Service
@@ -111,9 +135,13 @@ spec:
       labels:
         app: inventory-api
     spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z smart-inventory-db 5432; do echo waiting for database; sleep 2; done']
       containers:
       - name: inventory-api
-        image: abdelrahman1212aa/inventory-api:latest
+        image: abdelrahman1212aa/smart-inventory-inventory-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
@@ -209,9 +237,13 @@ spec:
       labels:
         app: alert-api
     spec:
+      initContainers:
+      - name: wait-for-db
+        image: busybox:1.36
+        command: ['sh', '-c', 'until nc -z smart-inventory-db 5432; do echo waiting for database; sleep 2; done']
       containers:
       - name: alert-api
-        image: abdelrahman1212aa/smart-alert-api:latest
+        image: abdelrahman1212aa/smart-inventory-alert-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5002

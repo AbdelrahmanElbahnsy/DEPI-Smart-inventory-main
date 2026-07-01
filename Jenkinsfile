@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        label 'docker-agent'
-    }
+    agent any
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'

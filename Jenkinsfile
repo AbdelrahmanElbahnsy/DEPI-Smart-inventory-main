@@ -97,22 +97,17 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 echo "🚀 Deploying Smart Inventory to Kubernetes Cluster..."
-                sh """
-                # Set dynamic image tags in manifests
-                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-backend:latest|${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml
-                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-inventory-api:latest|${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml
-                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml
-                sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml
+                // Update manifests with current image tag
+                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-backend:latest|${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
+                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-inventory-api:latest|${DOCKER_REGISTRY}/${INVENTORY_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
+                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-alert-api:latest|${DOCKER_REGISTRY}/${ALERT_IMAGE}:${IMAGE_TAG}|g' infra/k8s/03-apis.yaml"
+                sh "sed -i 's|${DOCKER_REGISTRY}/smart-inventory-ui:latest|${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${IMAGE_TAG}|g' infra/k8s/04-frontend.yaml"
 
-                # Apply manifests to cluster using local kubeconfig
-                kubectl apply -f infra/k8s/ --kubeconfig=kubeconfig.yaml
+                // Use Dockerized kubectl to apply changes without needing local kubectl installation
+                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config -v ${WORKSPACE}/infra/k8s:/infra/k8s bitnami/kubectl:latest apply -f /infra/k8s/"
                 
-                # Check status of deployments
-                kubectl rollout status deployment/backend --kubeconfig=kubeconfig.yaml --timeout=120s
-                kubectl rollout status deployment/inventory-api --kubeconfig=kubeconfig.yaml --timeout=120s
-                kubectl rollout status deployment/alert-api --kubeconfig=kubeconfig.yaml --timeout=120s
-                kubectl rollout status deployment/frontend --kubeconfig=kubeconfig.yaml --timeout=120s
-                """
+                // Rollout status check using dockerized kubectl
+                sh "docker run --rm -v ${WORKSPACE}/kubeconfig.yaml:/root/.kube/config bitnami/kubectl:latest rollout status deployment/backend --timeout=120s"
             }
         }
     }

@@ -40,10 +40,13 @@ pipeline {
                     sed -i 's|image: .*/smart-inventory-ui:.*|image: ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}|g' infra/k8s/*.yaml
                 """
 
-                // النشر باستخدام Pipe لإرسال المحتوى مباشرة للـ kubectl (تجنب مشاكل الـ Path)
-                sh "cat infra/k8s/02-database.yaml | docker run --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
-                sh "cat infra/k8s/03-apis.yaml | docker run --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
-                sh "cat infra/k8s/04-frontend.yaml | docker run --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
+                // التحقق من الاتصال بالـ Cluster كخطوة تصحيح مؤقتة
+                sh "docker run --network host --rm -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest cluster-info"
+
+                // النشر باستخدام Pipe لإرسال المحتوى مباشرة للـ kubectl (تجنب مشاكل الـ Path) مع مشاركة شبكة المضيف
+                sh "cat infra/k8s/02-database.yaml | docker run --network host --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
+                sh "cat infra/k8s/03-apis.yaml | docker run --network host --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
+                sh "cat infra/k8s/04-frontend.yaml | docker run --network host --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
                 
                 echo "🎉 Deployment completed successfully!"
             }

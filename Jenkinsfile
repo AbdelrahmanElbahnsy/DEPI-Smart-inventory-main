@@ -41,12 +41,12 @@ pipeline {
                 """
 
                 // التحقق من الاتصال بالـ Cluster كخطوة تصحيح مؤقتة
-                sh "docker run --network host --rm -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest cluster-info"
+                sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest cluster-info"
 
-                // النشر باستخدام Pipe لإرسال المحتوى مباشرة للـ kubectl (تجنب مشاكل الـ Path) مع مشاركة شبكة المضيف
-                sh "cat infra/k8s/02-database.yaml | docker run --network host --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
-                sh "cat infra/k8s/03-apis.yaml | docker run --network host --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
-                sh "cat infra/k8s/04-frontend.yaml | docker run --network host --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"
+                // النشر باستخدام Pipe لإرسال المحتوى مباشرة للـ kubectl (تجنب مشاكل الـ Path) مع مشاركة شبكة المضيف وتشغيل كـ root
+                sh "cat infra/k8s/02-database.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -"
+                sh "cat infra/k8s/03-apis.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -"
+                sh "cat infra/k8s/04-frontend.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -"
                 
                 echo "🎉 Deployment completed successfully!"
             }

@@ -88,8 +88,7 @@ pipeline {
                             stage("Build & Push ${service.name}") {
                                 retry(3) {
                                     echo "Building ${service.name} using context ${service.context}..."
-                                    sh "docker pull ${DOCKER_REGISTRY}/${service.name}:latest || true"
-                                    sh "docker build --cache-from ${DOCKER_REGISTRY}/${service.name}:latest ${service.buildArgs} -t ${DOCKER_REGISTRY}/${service.name}:latest -t ${DOCKER_REGISTRY}/${service.name}:${IMAGE_TAG} -f ${service.dockerfile} ${service.context}"
+                                    sh "docker build ${service.buildArgs} -t ${DOCKER_REGISTRY}/${service.name}:latest -t ${DOCKER_REGISTRY}/${service.name}:${IMAGE_TAG} -f ${service.dockerfile} ${service.context}"
                                 }
                                 retry(3) {
                                     echo "Pushing ${service.name}..."

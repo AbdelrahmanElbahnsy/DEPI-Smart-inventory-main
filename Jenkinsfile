@@ -8,6 +8,10 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '10'))
     }
 
+    parameters {
+        string(name: 'VITE_API_URL', defaultValue: 'http://68.221.69.163/api', description: 'API gateway URL for the frontend application')
+    }
+
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
         KUBECONFIG_PATH = '/etc/rancher/k3s/k3s.yaml'
@@ -50,7 +54,7 @@ pipeline {
         stage('Parallel Build & Push') {
             steps {
                 script {
-                    def viteApiUrl = env.VITE_API_URL ?: 'http://68.221.69.163/api'
+                    def viteApiUrl = params.VITE_API_URL ?: env.VITE_API_URL ?: 'http://68.221.69.163/api'
                     def services = [
                         [
                             name: 'smart-inventory-api',

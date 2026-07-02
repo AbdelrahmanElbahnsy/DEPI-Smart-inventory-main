@@ -10,7 +10,6 @@ pipeline {
 
     environment {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
-        IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         KUBECONFIG_PATH = '/etc/rancher/k3s/k3s.yaml'
     }
 
@@ -18,6 +17,9 @@ pipeline {
         stage('Checkout') {
             steps {
                 checkout scm
+                script {
+                    env.IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+                }
             }
         }
 

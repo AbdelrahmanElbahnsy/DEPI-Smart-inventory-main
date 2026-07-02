@@ -6,7 +6,7 @@ pipeline {
         // استخراج الـ Tag من الـ Git للتوحيد
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         // المسار الثابت للـ Kubeconfig على السيرفر
-        KUBECONFIG_PATH = '/tmp/my-k8s-config.yaml'
+        KUBECONFIG_PATH = '/etc/rancher/k3s/k3s.yaml'
     }
 
     stages {
@@ -32,8 +32,13 @@ pipeline {
             steps {
                 echo "🚀 Deploying to Kubernetes Cluster..."
                 
-                // تحديث الـ Images في جميع الملفات دفعة واحدة باستخدام الـ Tag الموحد
-                sh "sed -i 's|image:.*|image: ${DOCKER_REGISTRY}/smart-inventory-image:${IMAGE_TAG}|g' infra/k8s/*.yaml"
+                // تحديث الـ Images لكل تطبيق على حدة باستخدام الـ Tag الموحد مع الحفاظ على اسم الـ Repository
+                sh """
+                    sed -i 's|image: .*smart-inventory-backend:.*|image: ${DOCKER_REGISTRY}/smart-inventory-backend:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                    sed -i 's|image: .*smart-inventory-inventory-api:.*|image: ${DOCKER_REGISTRY}/smart-inventory-inventory-api:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                    sed -i 's|image: .*smart-inventory-alert-api:.*|image: ${DOCKER_REGISTRY}/smart-inventory-alert-api:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                    sed -i 's|image: .*smart-inventory-ui:.*|image: ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                """
 
                 // النشر باستخدام Pipe لإرسال المحتوى مباشرة للـ kubectl (تجنب مشاكل الـ Path)
                 sh "cat infra/k8s/02-database.yaml | docker run --rm -i -v ${KUBECONFIG_PATH}:/root/.kube/config bitnami/kubectl:latest apply -f -"

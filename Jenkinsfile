@@ -34,10 +34,10 @@ pipeline {
                 
                 // تحديث الـ Images لكل تطبيق على حدة باستخدام الـ Tag الموحد مع الحفاظ على اسم الـ Repository
                 sh """
-                    sed -i 's|image: .*smart-inventory-backend:.*|image: ${DOCKER_REGISTRY}/smart-inventory-backend:${IMAGE_TAG}|g' infra/k8s/*.yaml
-                    sed -i 's|image: .*smart-inventory-inventory-api:.*|image: ${DOCKER_REGISTRY}/smart-inventory-inventory-api:${IMAGE_TAG}|g' infra/k8s/*.yaml
-                    sed -i 's|image: .*smart-inventory-alert-api:.*|image: ${DOCKER_REGISTRY}/smart-inventory-alert-api:${IMAGE_TAG}|g' infra/k8s/*.yaml
-                    sed -i 's|image: .*smart-inventory-ui:.*|image: ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                    sed -i 's|image: .*/smart-inventory-api:.*|image: ${DOCKER_REGISTRY}/smart-inventory-api:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                    sed -i 's|image: .*/inventory-api:.*|image: ${DOCKER_REGISTRY}/inventory-api:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                    sed -i 's|image: .*/smart-alert-api:.*|image: ${DOCKER_REGISTRY}/smart-alert-api:${IMAGE_TAG}|g' infra/k8s/*.yaml
+                    sed -i 's|image: .*/smart-inventory-ui:.*|image: ${DOCKER_REGISTRY}/smart-inventory-ui:${IMAGE_TAG}|g' infra/k8s/*.yaml
                 """
 
                 // النشر باستخدام Pipe لإرسال المحتوى مباشرة للـ kubectl (تجنب مشاكل الـ Path)

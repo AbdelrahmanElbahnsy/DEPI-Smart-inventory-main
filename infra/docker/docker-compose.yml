@@ -1,8 +1,7 @@
-version: '3.8'
-
 services:
   jenkins:
-    image: jenkins/jenkins:lts
+    build: .
+    image: custom-jenkins:lts
     container_name: jenkins-server
     restart: always
     user: root
@@ -40,7 +39,7 @@ services:
       retries: 5
 
   backend:
-    image: abdelrahman1212aa/smart-inventory-backend:${IMAGE_TAG:-latest}
+    image: abdelrahman1212aa/smart-inventory-api:${IMAGE_TAG:-latest}
     container_name: smart_inventory_api
     pull_policy: missing
     restart: always
@@ -65,7 +64,7 @@ services:
       start_period: 10s
 
   inventory-api:
-    image: abdelrahman1212aa/smart-inventory-inventory-api:${IMAGE_TAG:-latest}
+    image: abdelrahman1212aa/inventory-api:${IMAGE_TAG:-latest}
     container_name: smart_inventory_service
     pull_policy: missing
     restart: always
@@ -89,7 +88,7 @@ services:
       start_period: 10s
 
   alert-api:
-    image: abdelrahman1212aa/smart-inventory-alert-api:${IMAGE_TAG:-latest}
+    image: abdelrahman1212aa/smart-alert-api:${IMAGE_TAG:-latest}
     container_name: smart_alert_service
     pull_policy: missing
     restart: always

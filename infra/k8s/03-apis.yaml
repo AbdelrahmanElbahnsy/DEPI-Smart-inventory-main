@@ -34,7 +34,7 @@ spec:
         command: ['sh', '-c', 'until nc -z smart-inventory-db 5432; do echo waiting for database; sleep 2; done']
       containers:
       - name: backend-api
-        image: abdelrahman1212aa/smart-inventory-backend:latest
+        image: abdelrahman1212aa/smart-inventory-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5000
@@ -139,7 +139,7 @@ spec:
         command: ['sh', '-c', 'until nc -z smart-inventory-db 5432; do echo waiting for database; sleep 2; done']
       containers:
       - name: inventory-api
-        image: abdelrahman1212aa/smart-inventory-inventory-api:latest
+        image: abdelrahman1212aa/inventory-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5001
@@ -239,7 +239,7 @@ spec:
         command: ['sh', '-c', 'until nc -z smart-inventory-db 5432; do echo waiting for database; sleep 2; done']
       containers:
       - name: alert-api
-        image: abdelrahman1212aa/smart-inventory-alert-api:latest
+        image: abdelrahman1212aa/smart-alert-api:latest
         imagePullPolicy: Always
         ports:
         - containerPort: 5002

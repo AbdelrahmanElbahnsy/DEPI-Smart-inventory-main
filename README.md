@@ -22,7 +22,7 @@ The system is decoupled into specialized microservices to ensure high availabili
 | **Inventory API** | Core logic for stock, products, and suppliers | Node.js, Sequelize |
 | **Alert API** | Real-time threshold monitoring & notifications | Node.js, PostgreSQL |
 | **Database** | Persistent Relational Data Store | PostgreSQL 16 (Dockerized) |
-
+.....
 ### Communication Flow
 All services communicate via a dedicated internal Docker network. The **Gateway API** acts as the single entry point for the frontend, routing requests to the appropriate internal microservices while enforcing **RBAC** (Role-Based Access Control).
 

@@ -12,7 +12,6 @@ pipeline {
         DOCKER_REGISTRY = 'abdelrahman1212aa'
         IMAGE_TAG = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
         KUBECONFIG_PATH = '/etc/rancher/k3s/k3s.yaml'
-        VITE_API_URL = env.VITE_API_URL ?: 'http://68.221.69.163/api'
     }
 
     stages {
@@ -49,6 +48,7 @@ pipeline {
         stage('Parallel Build & Push') {
             steps {
                 script {
+                    def viteApiUrl = env.VITE_API_URL ?: 'http://68.221.69.163/api'
                     def services = [
                         [
                             name: 'smart-inventory-api',
@@ -72,7 +72,7 @@ pipeline {
                             name: 'smart-inventory-ui',
                             dockerfile: 'services/frontend/Dockerfile',
                             context: '.',
-                            buildArgs: "--build-arg VITE_API_URL=${VITE_API_URL}"
+                            buildArgs: "--build-arg VITE_API_URL=${viteApiUrl}"
                         ]
                     ]
 

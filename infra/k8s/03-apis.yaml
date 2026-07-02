@@ -5,8 +5,9 @@ metadata:
   labels:
     app.kubernetes.io/part-of: smart-inventory
 spec:
+  storageClassName: local-path
   accessModes:
-    - ReadWriteMany
+    - ReadWriteOnce
   resources:
     requests:
       storage: 2Gi

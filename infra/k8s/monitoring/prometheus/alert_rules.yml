@@ -54,4 +54,4 @@ groups:
           severity: critical
         annotations:
           summary: "Always Firing Test"
-          description: "Testing Alertmanager email notifications."
+          description: "This alert is used only to verify Prometheus → Alertmanager → Gmail notifications."

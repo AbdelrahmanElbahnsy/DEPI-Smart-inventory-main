@@ -175,3 +175,11 @@ data:
             annotations:
               summary: "PostgreSQL Exporter Down"
               description: "The PostgreSQL exporter has been down for more than 2 minutes."
+          - alert: AlwaysFiring
+            expr: vector(1)
+            for: 10s
+            labels:
+              severity: critical
+            annotations:
+              summary: "Always Firing Test"
+              description: "This alert is used only to verify Prometheus → Alertmanager → Gmail notifications."

@@ -19,7 +19,9 @@ data:
 
     alerting:
       alertmanagers:
-        - static_configs:
+        - api_version: v2
+          path_prefix: /alertmanager
+          static_configs:
             - targets:
                 - alertmanager.monitoring.svc.cluster.local:9093
 

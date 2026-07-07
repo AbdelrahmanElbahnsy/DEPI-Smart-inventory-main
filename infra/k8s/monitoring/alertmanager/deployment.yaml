@@ -69,6 +69,9 @@ spec:
           mountPath: /etc/alertmanager
         - name: alertmanager-storage
           mountPath: /alertmanager
+        - name: gmail-secret
+          mountPath: /etc/alertmanager/gmail
+          readOnly: true
       volumes:
       - name: alertmanager-config
         secret:
@@ -76,3 +79,6 @@ spec:
       - name: alertmanager-storage
         persistentVolumeClaim:
           claimName: alertmanager-pvc
+      - name: gmail-secret
+        secret:
+          secretName: gmail-secret

@@ -1,0 +1,48 @@
+groups:
+  - name: infrastructure.rules
+    rules:
+
+      - alert: NodeDown
+        expr: up{job="kubernetes-service-endpoints"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Node Exporter Down"
+          description: "{{ $labels.instance }} is unreachable."
+
+      - alert: HighCPUUsage
+        expr: (100 - avg by(instance)(rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Usage"
+          description: "CPU usage is above 80%."
+
+      - alert: HighMemoryUsage
+        expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Memory Usage"
+          description: "Memory usage is above 80%."
+
+      - alert: DiskUsageHigh
+        expr: (node_filesystem_avail_bytes{fstype!="tmpfs"} / node_filesystem_size_bytes{fstype!="tmpfs"}) * 100 < 15
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk Almost Full"
+          description: "Disk usage exceeded 85%."
+
+      - alert: PostgreSQLExporterDown
+        expr: up{service="postgres-exporter"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL Exporter Down"
+          description: "PostgreSQL exporter is unreachable."

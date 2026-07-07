@@ -46,3 +46,12 @@ groups:
         annotations:
           summary: "PostgreSQL Exporter Down"
           description: "PostgreSQL exporter is unreachable."
+
+      - alert: AlwaysFiring
+        expr: vector(1)
+        for: 10s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Always Firing Test"
+          description: "Testing Alertmanager email notifications."

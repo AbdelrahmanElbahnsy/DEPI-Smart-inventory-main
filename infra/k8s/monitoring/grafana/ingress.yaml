@@ -11,10 +11,9 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-  - host: grafana.smartinventory.local
-    http:
+  - http:
       paths:
-      - path: /
+      - path: /grafana
         pathType: Prefix
         backend:
           service:

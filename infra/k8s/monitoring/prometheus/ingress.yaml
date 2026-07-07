@@ -2,10 +2,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: alertmanager-ingress
+  name: prometheus-ingress
   namespace: monitoring
   labels:
-    app.kubernetes.io/name: alertmanager
+    app.kubernetes.io/name: prometheus
     app.kubernetes.io/part-of: smart-inventory
     app.kubernetes.io/component: monitoring
 spec:
@@ -13,10 +13,10 @@ spec:
   rules:
   - http:
       paths:
-      - path: /alertmanager
+      - path: /prometheus
         pathType: Prefix
         backend:
           service:
-            name: alertmanager
+            name: prometheus
             port:
-              number: 9093
+              number: 9090

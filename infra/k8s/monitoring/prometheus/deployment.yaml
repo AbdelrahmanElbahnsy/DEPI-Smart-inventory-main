@@ -37,6 +37,7 @@ spec:
         - "--config.file=/etc/prometheus/prometheus.yml"
         - "--storage.tsdb.path=/prometheus"
         - "--storage.tsdb.retention.time=15d"
+        - "--web.external-url=/prometheus"
         resources:
           requests:
             cpu: 200m
@@ -52,14 +53,14 @@ spec:
               - ALL
         livenessProbe:
           httpGet:
-            path: /-/healthy
+            path: /prometheus/-/healthy
             port: 9090
           initialDelaySeconds: 30
           timeoutSeconds: 10
           failureThreshold: 3
         readinessProbe:
           httpGet:
-            path: /-/ready
+            path: /prometheus/-/ready
             port: 9090
           initialDelaySeconds: 15
           timeoutSeconds: 10

@@ -37,7 +37,6 @@ spec:
         - "--storage.path=/alertmanager"
         - "--web.external-url=http://68.221.69.163/alertmanager"
         - "--web.route-prefix=/alertmanager"
-        - "--log.level=debug"
         resources:
           requests:
             cpu: 50m

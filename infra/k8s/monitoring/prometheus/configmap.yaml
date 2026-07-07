@@ -16,8 +16,10 @@ data:
 
     scrape_configs:
       - job_name: 'prometheus'
+        metrics_path: /prometheus/metrics
         static_configs:
-          - targets: ['localhost:9090']
+          - targets:
+              - localhost:9090
 
       - job_name: 'kubernetes-apiservers'
         kubernetes_sd_configs:

@@ -38,6 +38,7 @@ spec:
         - "--storage.tsdb.path=/prometheus"
         - "--storage.tsdb.retention.time=15d"
         - "--web.external-url=/prometheus"
+        - "--web.route-prefix=/prometheus"
         resources:
           requests:
             cpu: 200m

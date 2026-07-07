@@ -36,6 +36,7 @@ spec:
         - "--config.file=/etc/alertmanager/alertmanager.yml"
         - "--storage.path=/alertmanager"
         - "--web.external-url=/alertmanager"
+        - "--web.route-prefix=/alertmanager"
         resources:
           requests:
             cpu: 50m

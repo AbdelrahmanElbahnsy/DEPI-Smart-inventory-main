@@ -133,6 +133,21 @@ pipeline {
             }
         }
 
+        stage('Deploy Monitoring') {
+            steps {
+                echo "🚀 Deploying Monitoring Stack to Kubernetes..."
+                sh """
+                    cat infra/k8s/monitoring/namespace.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                    cat infra/k8s/monitoring/prometheus/serviceaccount.yaml infra/k8s/monitoring/prometheus/clusterrole.yaml infra/k8s/monitoring/prometheus/clusterrolebinding.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                    cat infra/k8s/monitoring/prometheus/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                    cat infra/k8s/monitoring/grafana/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                    cat infra/k8s/monitoring/node-exporter/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                    cat infra/k8s/monitoring/postgres-exporter/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                    cat infra/k8s/monitoring/alertmanager/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                """
+            }
+        }
+
         stage('Verify Rollouts') {
             steps {
                 script {

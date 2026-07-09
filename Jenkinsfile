@@ -145,7 +145,7 @@ pipeline {
                     ls -la infra/k8s
                     ls -la infra/k8s/monitoring
                 '''
-                sh """docker run --network host --user root --rm -v `pwd`:/work -w /work -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -k infra/k8s/monitoring/prometheus"""
+                sh """docker run --network host --user root --rm --volumes-from jenkins-server -w `pwd` -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -k infra/k8s/monitoring/prometheus"""
                 sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout restart deployment/alertmanager -n monitoring"
                 sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout restart deployment/prometheus -n monitoring"
                 sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout status deployment/alertmanager -n monitoring"
@@ -165,7 +165,7 @@ pipeline {
                     ls -la infra
                     ls -la infra/k8s
                     ls -la infra/k8s/monitoring
-                    docker run --network host --user root --rm -v `pwd`:/work -w /work -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -k infra/k8s/monitoring/prometheus
+                    docker run --network host --user root --rm --volumes-from jenkins-server -w `pwd` -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -k infra/k8s/monitoring/prometheus
                     cat infra/k8s/monitoring/grafana/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
                     cat infra/k8s/monitoring/node-exporter/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
                     cat infra/k8s/monitoring/postgres-exporter/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -

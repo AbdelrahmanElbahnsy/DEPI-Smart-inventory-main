@@ -133,6 +133,17 @@ pipeline {
             }
         }
 
+        stage('Deploy Monitoring Config') {
+            steps {
+                sh "cat infra/k8s/monitoring/alertmanager/secret.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -"
+                sh "cat infra/k8s/monitoring/prometheus/configmap.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -"
+                sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout restart deployment/alertmanager -n monitoring"
+                sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout restart deployment/prometheus -n monitoring"
+                sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout status deployment/alertmanager -n monitoring"
+                sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout status deployment/prometheus -n monitoring"
+            }
+        }
+
         stage('Deploy Monitoring') {
             steps {
                 echo "🚀 Deploying Monitoring Stack to Kubernetes..."

@@ -100,16 +100,11 @@ data:
             target_label: service
 
       # Placeholders for future application metrics (do not uncomment without app support)
-      # - job_name: 'backend'
-      #   kubernetes_sd_configs:
-      #     - role: endpoints
-      #   relabel_configs:
-      #     - source_labels: [__meta_kubernetes_service_name]
-      #       action: keep
-      #       regex: backend
-      #     - source_labels: [__meta_kubernetes_namespace]
-      #       action: keep
-      #       regex: default
+      - job_name: 'backend-api'
+        metrics_path: '/metrics'
+        static_configs:
+          - targets:
+              - 'backend.default.svc.cluster.local:5000'
       #
       # - job_name: 'inventory-api'
       #   kubernetes_sd_configs:
@@ -177,3 +172,27 @@ data:
             annotations:
               summary: "PostgreSQL Exporter Down"
               description: "The PostgreSQL exporter has been down for more than 2 minutes."
+          - alert: BackendDown
+            expr: up{job="backend-api"} == 0
+            for: 2m
+            labels:
+              severity: critical
+            annotations:
+              summary: "Backend API Down"
+              description: "Backend API has been unreachable for more than 2 minutes."
+          - alert: HighAPIResponseTime
+            expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1
+            for: 5m
+            labels:
+              severity: warning
+            annotations:
+              summary: "High API Response Time"
+              description: "95th percentile response time exceeded 1 second."
+          - alert: HighHTTP5xxRate
+            expr: sum(rate(http_requests_total{status_code=~"5.."}[5m])) > 0.1
+            for: 5m
+            labels:
+              severity: critical
+            annotations:
+              summary: "High HTTP 5xx Error Rate"
+              description: "Backend is returning excessive server errors."

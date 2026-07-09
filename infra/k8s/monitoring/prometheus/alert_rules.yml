@@ -92,29 +92,49 @@ groups:
           summary: "Container OOMKilled"
           description: "Container {{ $labels.container }} in Pod {{ $labels.namespace }}/{{ $labels.pod }} was terminated due to Out Of Memory."
 
+  - name: application.rules
+    rules:
       - alert: BackendDown
-        expr: up{job="backend-api"} == 0
-        for: 2m
+        expr: up{service="backend"} == 0
+        for: 1m
         labels:
           severity: critical
         annotations:
           summary: "Backend API Down"
-          description: "Backend API has been unreachable for more than 2 minutes."
+          description: "Backend API has been unreachable for more than one minute."
 
-      - alert: HighAPIResponseTime
-        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le)) > 1
+      - alert: InventoryAPIDown
+        expr: up{service="inventory-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Inventory API Down"
+          description: "Inventory API has been unreachable for more than one minute."
+
+      - alert: AlertAPIDown
+        expr: up{service="alert-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Alert API Down"
+          description: "Alert API has been unreachable for more than one minute."
+
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket[5m])) by (le,route)) > 1
         for: 5m
         labels:
           severity: warning
         annotations:
-          summary: "High API Response Time"
-          description: "95th percentile response time exceeded 1 second."
+          summary: "High Response Time"
+          description: "95th percentile response time exceeded one second."
 
       - alert: HighHTTP5xxRate
-        expr: sum(rate(http_requests_total{status_code=~"5.."}[5m])) > 0.1
+        expr: sum(rate(http_response_status_total{status_code=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
         for: 5m
         labels:
           severity: critical
         annotations:
           summary: "High HTTP 5xx Error Rate"
-          description: "Backend is returning excessive server errors."
+          description: "More than 5% of HTTP requests are returning 5xx responses."

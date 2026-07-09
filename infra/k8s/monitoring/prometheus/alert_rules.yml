@@ -45,4 +45,49 @@ groups:
           severity: critical
         annotations:
           summary: "PostgreSQL Exporter Down"
-          description: "PostgreSQL exporter is unreachable."
+          description: "PostgreSQL exporter is unreachable."
+
+      - alert: PodRestarting
+        expr: increase(kube_pod_container_status_restarts_total[10m]) > 0
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod Restarting"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} restarted within the last 10 minutes."
+
+      - alert: CrashLoopBackOff
+        expr: kube_pod_container_status_waiting_reason{reason="CrashLoopBackOff"} == 1
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CrashLoopBackOff"
+          description: "Container {{ $labels.container }} in Pod {{ $labels.namespace }}/{{ $labels.pod }} is in CrashLoopBackOff."
+
+      - alert: PodPending
+        expr: kube_pod_status_phase{phase="Pending"} == 1
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Pod Pending"
+          description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has been Pending for more than 5 minutes."
+
+      - alert: DeploymentUnavailable
+        expr: kube_deployment_status_replicas_unavailable > 0
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Deployment Unavailable"
+          description: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas."
+
+      - alert: OOMKilled
+        expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Container OOMKilled"
+          description: "Container {{ $labels.container }} in Pod {{ $labels.namespace }}/{{ $labels.pod }} was terminated due to Out Of Memory."

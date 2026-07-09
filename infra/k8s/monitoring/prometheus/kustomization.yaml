@@ -5,8 +5,22 @@ resources:
   - serviceaccount.yaml
   - clusterrole.yaml
   - clusterrolebinding.yaml
-  - configmap.yaml
   - pvc.yaml
   - deployment.yaml
   - service.yaml
   - ingress.yaml
+
+configMapGenerator:
+  - name: prometheus-config
+    namespace: monitoring
+    files:
+      - prometheus.yml
+      - alert_rules.yml
+    options:
+      labels:
+        app.kubernetes.io/name: prometheus
+        app.kubernetes.io/part-of: smart-inventory
+        app.kubernetes.io/component: monitoring
+
+generatorOptions:
+  disableNameSuffixHash: true

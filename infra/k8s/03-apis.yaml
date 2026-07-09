@@ -107,6 +107,10 @@ metadata:
   name: backend
   labels:
     app.kubernetes.io/part-of: smart-inventory
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "5000"
 spec:
   type: ClusterIP
   selector:
@@ -207,6 +211,10 @@ metadata:
   name: inventory-api
   labels:
     app.kubernetes.io/part-of: smart-inventory
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "5001"
 spec:
   type: ClusterIP
   selector:
@@ -307,6 +315,10 @@ metadata:
   name: alert-api
   labels:
     app.kubernetes.io/part-of: smart-inventory
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "5002"
 spec:
   type: ClusterIP
   selector:

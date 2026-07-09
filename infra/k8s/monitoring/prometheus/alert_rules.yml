@@ -45,13 +45,4 @@ groups:
           severity: critical
         annotations:
           summary: "PostgreSQL Exporter Down"
-          description: "PostgreSQL exporter is unreachable."
-
-      - alert: AlwaysFiring
-        expr: vector(1)
-        for: 10s
-        labels:
-          severity: critical
-        annotations:
-          summary: "Always Firing Test"
-          description: "This alert is used only to verify Prometheus → Alertmanager → Gmail notifications."
+          description: "PostgreSQL exporter is unreachable."

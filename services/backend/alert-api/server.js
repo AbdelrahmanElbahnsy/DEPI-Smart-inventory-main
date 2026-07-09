@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDB } from './config/db.js';
 import alertRoutes from './routes/alert.routes.js';
 import { startAlertScanner } from './services/scanner.js';
+import { register, metricsMiddleware } from './monitoring/metrics.js';
 
 dotenv.config();
 
@@ -18,6 +19,19 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json());
+
+// ─── Metrics Middleware ───
+app.use(metricsMiddleware);
+
+// ─── Metrics Endpoint ───
+app.get('/metrics', async (req, res) => {
+  try {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+  } catch (ex) {
+    res.status(500).end(ex);
+  }
+});
 
 // ─── Health Check ───
 app.get('/health', (req, res) => {

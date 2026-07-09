@@ -3,7 +3,7 @@ groups:
     rules:
 
       - alert: NodeDown
-        expr: up{job="kubernetes-service-endpoints"} == 0
+        expr: up{job="kubernetes-service-endpoints"} == 0 or absent(up{job="kubernetes-service-endpoints"})
         for: 1m
         labels:
           severity: critical
@@ -39,7 +39,7 @@ groups:
           description: "Disk usage exceeded 85%."
 
       - alert: PostgreSQLExporterDown
-        expr: up{service="postgres-exporter"} == 0
+        expr: up{service="postgres-exporter"} == 0 or absent(up{service="postgres-exporter"})
         for: 1m
         labels:
           severity: critical
@@ -95,7 +95,7 @@ groups:
   - name: application.rules
     rules:
       - alert: BackendDown
-        expr: up{service="backend"} == 0
+        expr: up{service="backend"} == 0 or absent(up{service="backend"})
         for: 1m
         labels:
           severity: critical
@@ -104,7 +104,7 @@ groups:
           description: "Backend API has been unreachable for more than one minute."
 
       - alert: InventoryAPIDown
-        expr: up{service="inventory-api"} == 0
+        expr: up{service="inventory-api"} == 0 or absent(up{service="inventory-api"})
         for: 1m
         labels:
           severity: critical
@@ -113,7 +113,7 @@ groups:
           description: "Inventory API has been unreachable for more than one minute."
 
       - alert: AlertAPIDown
-        expr: up{service="alert-api"} == 0
+        expr: up{service="alert-api"} == 0 or absent(up{service="alert-api"})
         for: 1m
         labels:
           severity: critical

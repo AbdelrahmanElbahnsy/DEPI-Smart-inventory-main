@@ -136,7 +136,7 @@ pipeline {
         stage('Deploy Monitoring Config') {
             steps {
                 sh "cat infra/k8s/monitoring/alertmanager/secret.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -"
-                sh "cat infra/k8s/monitoring/prometheus/configmap.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -"
+                sh "docker run --network host --user root --rm -v \\$(pwd):/work -w /work -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -k infra/k8s/monitoring/prometheus"
                 sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout restart deployment/alertmanager -n monitoring"
                 sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout restart deployment/prometheus -n monitoring"
                 sh "docker run --network host --user root --rm -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest rollout status deployment/alertmanager -n monitoring"
@@ -149,8 +149,7 @@ pipeline {
                 echo "🚀 Deploying Monitoring Stack to Kubernetes..."
                 sh """
                     cat infra/k8s/monitoring/namespace.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
-                    cat infra/k8s/monitoring/prometheus/serviceaccount.yaml infra/k8s/monitoring/prometheus/clusterrole.yaml infra/k8s/monitoring/prometheus/clusterrolebinding.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
-                    cat infra/k8s/monitoring/prometheus/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
+                    docker run --network host --user root --rm -v \\$(pwd):/work -w /work -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -k infra/k8s/monitoring/prometheus
                     cat infra/k8s/monitoring/grafana/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
                     cat infra/k8s/monitoring/node-exporter/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -
                     cat infra/k8s/monitoring/postgres-exporter/*.yaml | docker run --network host --user root --rm -i -v ${KUBECONFIG_PATH}:/tmp/config -e KUBECONFIG=/tmp/config bitnami/kubectl:latest apply -f -

@@ -1,12 +1,20 @@
 <div align="center">
   <h1>📦 Smart Inventory Management System</h1>
 
+  <blockquote>
+    🎓 <b>Official Graduation Project</b><br>
+    <b>Digital Egypt Pioneers Initiative (DEPI) – Cohort 4</b><br>
+    <b>Cloud & DevOps Engineering Track</b>
+  </blockquote>
+
   <p>
     <em>A Cloud-Native DevOps Graduation Project engineered with precision on Microsoft Azure.</em>
   </p>
 
   <!-- GitHub Badges -->
   <p>
+    <img src="https://img.shields.io/badge/🎓_Graduation_Project-DEPI_Cohort_4-gold?style=for-the-badge" alt="Graduation Project" />
+    <img src="https://img.shields.io/badge/Track-Cloud_%26_DevOps-blue?style=for-the-badge" alt="Cloud DevOps" />
     <a href="https://github.com/AbdelrahmanElbahnsy/DEPI-Smart-inventory-main/actions">
       <img src="https://img.shields.io/badge/CI%2FCD-Jenkins-%23D24939.svg?style=for-the-badge&logo=jenkins&logoColor=white" alt="Jenkins" />
     </a>
@@ -31,6 +39,7 @@
 <summary><b>📖 Table of Contents</b> (Click to expand)</summary>
 
 - [Project Overview](#-project-overview)
+- [Graduation Project](#-graduation-project)
 - [Application Features & Dashboard](#-application-features--dashboard)
 - [Project Highlights](#-project-highlights)
 - [Architecture & Tech Stack](#-architecture--tech-stack)
@@ -49,7 +58,6 @@
 - [API Reference](#-api-reference)
 - [Future Improvements](#-future-improvements)
 - [Contributors](#-contributors)
-- [License](#-license)
 
 </details>
 
@@ -62,6 +70,40 @@ The **Smart Inventory Management System** is a sophisticated, highly resilient c
 Built on a robust **Microservices Architecture**, the system intelligently decouples the frontend, backend APIs, and the database. Rather than relying on traditional monolithic servers, the entire application is containerized using **Docker** and orchestrated within a **K3s Kubernetes cluster** hosted on a **Microsoft Azure Ubuntu VM**. 
 
 Traffic routing is handled efficiently utilizing **Traefik as the Kubernetes Ingress Controller**, while **Nginx** serves as a reverse proxy for specific static asset serving or legacy routing. This implementation achieves high availability, dynamic scalability, and provides deep observability through a meticulously configured **Prometheus and Grafana** stack.
+
+---
+
+## 🎓 Graduation Project
+
+This project was developed as the official Graduation Project of the **Digital Egypt Pioneers Initiative (DEPI) – Cohort 4** under the **Cloud & DevOps Engineering Track**.
+
+The objective of this project is to demonstrate the complete lifecycle of building, deploying, automating, securing, monitoring, and managing a production-ready cloud-native application using modern DevOps methodologies and Microsoft Azure.
+
+This project covers:
+
+- **Cloud Infrastructure**
+- **Infrastructure as Code**
+- **Configuration Management**
+- **Docker Containerization**
+- **Kubernetes Orchestration**
+- **CI/CD Automation**
+- **Monitoring & Alerting**
+- **PostgreSQL Database**
+- **Microservices Architecture**
+- **Azure Deployment**
+
+### 🎯 Project Objectives
+
+- ✔️ **Build a Production-Ready Inventory Platform**
+- ✔️ **Apply Cloud-Native Architecture**
+- ✔️ **Automate Infrastructure using Terraform**
+- ✔️ **Configure Servers using Ansible**
+- ✔️ **Deploy Microservices with Kubernetes**
+- ✔️ **Build CI/CD Pipelines using Jenkins**
+- ✔️ **Monitor Infrastructure using Prometheus & Grafana**
+- ✔️ **Implement Enterprise DevOps Best Practices**
+
+> *"This repository represents the final graduation project submitted as part of the Digital Egypt Pioneers Initiative (DEPI) – Cohort 4, demonstrating practical implementation of modern Cloud Computing and DevOps Engineering concepts."*
 
 ---
 
@@ -401,12 +443,6 @@ While this graduation project implements a comprehensive DevOps lifecycle, furth
 **Abdelrahman Mohamed El-Bahnsy** 
 *Senior DevOps Engineer / Cloud Architect*
 - GitHub: [@AbdelrahmanElbahnsy](https://github.com/AbdelrahmanElbahnsy)
-
----
-
-## 📄 License
-
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
 
 ---
 <div align="center">

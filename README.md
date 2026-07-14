@@ -29,6 +29,18 @@
     <img src="https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white" alt="NodeJS" />
     <img src="https://img.shields.io/badge/postgresql-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
   </p>
+
+  <h3>🚀 Quick Access</h3>
+  <table>
+    <tr>
+      <td align="center">🌐 <b>Live Demo</b></td>
+      <td align="center">📂 <b>GitHub Repository</b></td>
+    </tr>
+    <tr>
+      <td align="center"><a href="http://68.221.69.163">Access the Application</a></td>
+      <td align="center"><a href="https://github.com/AbdelrahmanElbahnsy/DEPI-Smart-inventory-main">View Source Code</a></td>
+    </tr>
+  </table>
 </div>
 
 ---
@@ -56,8 +68,9 @@
 - [Project Structure](#-project-structure)
 - [Installation & Quick Start](#-installation--quick-start)
 - [API Reference](#-api-reference)
+- [Live Demo](#-live-demo)
 - [Future Improvements](#-future-improvements)
-- [Contributors](#-contributors)
+- [Author](#-author)
 
 </details>
 
@@ -428,6 +441,16 @@ The Traefik Ingress controller routes external requests to specific backend micr
 
 ---
 
+## 🌐 Live Demo
+
+The application is fully deployed on a highly available **Microsoft Azure Ubuntu VM** orchestrated by Kubernetes (K3s). You can access the live production environment and explore the real-time functionality through the following link:
+
+👉 **[Access the Live Smart Inventory Application (http://68.221.69.163)](http://68.221.69.163)**
+
+*(Note: If the application is inaccessible, the underlying Azure Virtual Machine may have been temporarily deallocated to conserve cloud credits for this graduation project).*
+
+---
+
 ## 🔮 Future Improvements
 
 While this graduation project implements a comprehensive DevOps lifecycle, further enterprise enhancements could include:
@@ -438,11 +461,25 @@ While this graduation project implements a comprehensive DevOps lifecycle, furth
 
 ---
 
-## 👥 Contributors
+## 👨‍💻 Author
 
-**Abdelrahman Mohamed El-Bahnsy** 
-*Senior DevOps Engineer / Cloud Architect*
-- GitHub: [@AbdelrahmanElbahnsy](https://github.com/AbdelrahmanElbahnsy)
+**Abdelrahman Mohamed El-Bahnsy**  
+*Cloud | DevOps | Systems Engineer*
+
+🎓 **Official Graduation Project**  
+*Digital Egypt Pioneers Initiative (DEPI) – Cohort 4*  
+*Cloud & DevOps Engineering Track*
+
+### 🌐 Connect with Me
+
+- [![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/AbdelrahmanElbahnsy)
+- [![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/abdelrahmanelbahnsy)
+
+### 💬 About the Author
+
+Passionate Cloud & DevOps Engineer with hands-on experience in Microsoft Azure, Docker, Kubernetes (K3s), Jenkins, Terraform, Ansible, Prometheus, Grafana, PostgreSQL, and modern DevOps practices.
+
+This repository showcases the practical implementation of cloud-native architecture, CI/CD automation, Infrastructure as Code, configuration management, monitoring, and container orchestration through a production-ready Smart Inventory Management System.
 
 ---
 <div align="center">

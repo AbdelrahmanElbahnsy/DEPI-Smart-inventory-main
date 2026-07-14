@@ -236,16 +236,24 @@ The deployment relies heavily on strict separation of concerns utilizing Namespa
 
 ## 👁️ Observability & Monitoring
 
-True cloud-native applications require deep observability. The system employs a full Prometheus stack, visualized through custom Grafana dashboards.
+True cloud-native applications require deep observability. The system employs a full Prometheus stack, visualized through custom Grafana dashboards tailored for different infrastructure layers.
 
-<p align="center">
-  <img src="docs/screenshots/smart-inventory-grafana.jpeg" alt="Grafana Application Dashboard" width="48%">
-  <img src="docs/screenshots/grafana-server.jpeg" alt="Grafana Server Monitoring" width="48%">
-  <br>
-  <em>Left: Custom Grafana Dashboard for Application Metrics. Right: Deep server hardware monitoring (Node Exporter).</em>
-</p>
+### 📈 Grafana Visualizations
 
 - **Grafana:** Transforms raw Prometheus data into highly interactive, visual dashboards for real-time monitoring of cluster health, Nginx/Traefik ingress routing performance, and application throughput.
+
+<p align="center">
+  <img src="docs/screenshots/grafana-k8s.jpeg" alt="Kubernetes Monitoring Dashboard" width="80%">
+  <br>
+  <em>Kubernetes Monitoring Dashboard: Comprehensive overview of K3s cluster health, pod CPU/Memory usage, and node capacity.</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/smart-inventory-grafana.jpeg" alt="Business Metrics Dashboard" width="48%">
+  <img src="docs/screenshots/grafana-server.jpeg" alt="Server Monitoring Dashboard" width="48%">
+  <br>
+  <em>Left: Business Metrics Dashboard detailing application-specific throughput. Right: Server Monitoring Dashboard analyzing raw Azure VM hardware telemetry.</em>
+</p>
 
 ### Prometheus Targets & Metrics
 

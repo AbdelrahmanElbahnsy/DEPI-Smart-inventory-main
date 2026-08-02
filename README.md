@@ -163,7 +163,7 @@ Traditional inventory systems struggle to scale efficiently under load and are n
 ## 🗺️ Project Roadmap
 
 <p align="center">
-  <img src="docs/screenshots/project-roadmap.png" alt="Project Roadmap" width="100%">
+  <img src="docs/screenshots/project-roadmap.jpeg" alt="Project Roadmap" width="100%">
 </p>
 
 <p align="center">

@@ -160,6 +160,16 @@ Traditional inventory systems struggle to scale efficiently under load and are n
 
 ---
 
+## 🗺️ Project Roadmap
+
+<p align="center">
+  <img src="docs/screenshots/project-roadmap.png" alt="Project Roadmap" width="100%">
+</p>
+
+<p align="center">
+  <em>Executive overview of the Smart Inventory Management System, including the cloud architecture, DevOps workflow, CI/CD pipeline, Kubernetes deployment, monitoring stack, and technology ecosystem.</em>
+</p>
+
 ## 🏗️ Architecture & Tech Stack
 
 <p align="center">
